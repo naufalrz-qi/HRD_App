@@ -21,41 +21,62 @@
                 <input type="text" id="keterangan" name="keterangan" class="form-control" required placeholder="Cth: Tahun Baru 2026">
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Manual</button>
         </form>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+
+        <h3>Tarik Data Otomatis</h3>
+        <p class="text-muted" style="margin-top:-10px; font-size:0.85rem;">Tarik jadwal libur nasional Indonesia otomatis via API Nager.Date.</p>
+        <form method="POST" action="{{ url_for('holiday_controller.generate_api') }}" onsubmit="document.getElementById('btn-fetch').innerHTML = 'Menarik Data...'; document.getElementById('btn-fetch').disabled = true;">
+            <div class="form-group">
+                <label class="form-label" for="year">Pilih Tahun</label>
+                <input type="number" id="year" name="year" class="form-control" value="2024" required>
+            </div>
+            <button type="submit" id="btn-fetch" class="btn btn-success" style="width: 100%;">Tarik dari API</button>
+        </form>
+
     </div>
 
     <!-- Tabel Daftar Tanggal Merah -->
-    <div class="card">
-        <h3>Daftar Tanggal Merah</h3>
-        <p class="text-muted" style="margin-top:-10px; font-size:0.85rem;">Tanggal di bawah ini akan diabaikan (tidak memotong cuti) untuk karyawan bermasa kerja >= 3 tahun.</p>
-        
-        <table class="table" style="margin-top: 1rem;">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Keterangan</th>
-                    <th width="100">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for holiday in holidays %}
-                <tr>
-                    <td style="color: var(--danger); font-weight: bold;">{{ holiday.tanggal.strftime('%d %B %Y') }}</td>
-                    <td>{{ holiday.keterangan }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('holiday_controller.delete', holiday_id=holiday.id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus tanggal merah ini?');">
-                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3" class="text-muted" style="text-align: center;">Belum ada data tanggal merah.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% if sorted_years %}
+            {% for year in sorted_years %}
+            <div class="card" style="padding: 1.5rem;">
+                <h3 style="margin-top: 0; margin-bottom: 1rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; display: inline-block;">
+                    Tahun {{ year }}
+                </h3>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">Tanggal</th>
+                            <th>Keterangan</th>
+                            <th style="width: 100px; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for holiday in grouped_holidays[year] %}
+                        <tr>
+                            <td style="color: var(--danger); font-weight: 600;">{{ holiday.tanggal.strftime('%d %b') }}</td>
+                            <td>{{ holiday.keterangan }}</td>
+                            <td style="text-align: center;">
+                                <form method="POST" action="{{ url_for('holiday_controller.delete', holiday_id=holiday.id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus tanggal merah ini?');">
+                                    <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card" style="text-align: center; padding: 3rem;">
+                <h4 class="text-muted">Belum ada data tanggal merah</h4>
+                <p class="text-muted">Gunakan form di sebelah kiri untuk menambah manual atau menarik otomatis dari API.</p>
+            </div>
+        {% endif %}
     </div>
 
 </div>

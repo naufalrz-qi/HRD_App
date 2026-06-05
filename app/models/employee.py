@@ -31,3 +31,29 @@ class Employee(db.Model):
             anniversary_3yr = self.tanggal_mulai_bekerja.replace(year=self.tanggal_mulai_bekerja.year + 3, month=3, day=1)
         return date.today() >= anniversary_3yr
 
+    def get_masa_kerja(self):
+        from datetime import date
+        if not self.tanggal_mulai_bekerja:
+            return "-"
+        
+        today = date.today()
+        years = today.year - self.tanggal_mulai_bekerja.year
+        months = today.month - self.tanggal_mulai_bekerja.month
+        
+        if today.day < self.tanggal_mulai_bekerja.day:
+            months -= 1
+            
+        if months < 0:
+            years -= 1
+            months += 12
+            
+        parts = []
+        if years > 0:
+            parts.append(f"{years} Tahun")
+        if months > 0:
+            parts.append(f"{months} Bulan")
+            
+        if not parts:
+            return "< 1 Bulan"
+            
+        return " ".join(parts)

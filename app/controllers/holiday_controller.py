@@ -31,8 +31,17 @@ def role_required(*roles):
 @login_required
 @role_required('ADMIN', 'SUPERADMIN')
 def index():
-    holidays = PublicHoliday.query.order_by(PublicHoliday.tanggal.desc()).all()
-    return render_template('admin/manage_holidays.html', holidays=holidays)
+    from collections import defaultdict
+    holidays = PublicHoliday.query.order_by(PublicHoliday.tanggal.asc()).all()
+    
+    grouped_holidays = defaultdict(list)
+    for h in holidays:
+        grouped_holidays[h.tanggal.year].append(h)
+        
+    # Urutkan tahun dari yang terbaru
+    sorted_years = sorted(grouped_holidays.keys(), reverse=True)
+    
+    return render_template('admin/manage_holidays.html', grouped_holidays=grouped_holidays, sorted_years=sorted_years)
 
 @bp.route('/create', methods=['POST'])
 @login_required
@@ -61,6 +70,42 @@ def create():
     except Exception as e:
         db.session.rollback()
         flash(f'Terjadi kesalahan: {str(e)}', 'danger')
+        
+    return redirect(url_for('holiday_controller.index'))
+
+@bp.route('/generate_api', methods=['POST'])
+@login_required
+@role_required('ADMIN', 'SUPERADMIN')
+def generate_api():
+    import urllib.request
+    import json
+    from datetime import date
+    
+    year = request.form.get('year', date.today().year)
+    try:
+        url = f'https://date.nager.at/api/v3/PublicHolidays/{year}/ID'
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = urllib.request.urlopen(req)
+        data = json.loads(response.read())
+        
+        count = 0
+        for item in data:
+            tgl = datetime.strptime(item['date'], '%Y-%m-%d').date()
+            existing = PublicHoliday.query.filter_by(tanggal=tgl).first()
+            if not existing:
+                new_holiday = PublicHoliday(tanggal=tgl, keterangan=item['localName'])
+                db.session.add(new_holiday)
+                count += 1
+                
+        if count > 0:
+            db.session.commit()
+            flash(f'Berhasil menambahkan {count} hari libur nasional dari API Nager.Date untuk tahun {year}.', 'success')
+        else:
+            flash(f'Tidak ada tanggal baru yang ditambahkan (semua libur tahun {year} sudah ada di database).', 'info')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Gagal menarik data dari API: {str(e)}', 'danger')
         
     return redirect(url_for('holiday_controller.index'))
 

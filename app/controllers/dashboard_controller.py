@@ -20,20 +20,26 @@ def index():
         all_employees = Employee.query.all()
         birthdays_this_month = [e for e in all_employees if e.tanggal_lahir and e.tanggal_lahir.month == current_month]
         
-        # Contract Reminders
+        # Contract Reminders (Bulan Ini)
         contract_reminders = []
+        import datetime
         for e in all_employees:
             if e.tanggal_mulai_bekerja:
-                delta = today - e.tanggal_mulai_bekerja
-                days_worked = delta.days
+                start = e.tanggal_mulai_bekerja
                 
-                if 60 <= days_worked <= 90:
-                    contract_reminders.append({"employee": e, "type": "Habis Masa Training"})
-                elif days_worked > 90:
-                    days_after_training = days_worked - 90
-                    days_in_current_year = days_after_training % 365
-                    if days_in_current_year >= 335:
-                        contract_reminders.append({"employee": e, "type": "Perpanjangan Kontrak"})
+                training_end = start + datetime.timedelta(days=90)
+                if training_end.year == today.year and training_end.month == today.month:
+                    contract_reminders.append({"employee": e, "type": "Habis Masa Training", "date": training_end})
+                    continue
+                
+                if start.month == today.month and today.year > start.year:
+                    try:
+                        anniversary = start.replace(year=today.year)
+                    except ValueError:
+                        anniversary = start.replace(year=today.year, month=3, day=1)
+                    contract_reminders.append({"employee": e, "type": f"Kontrak Tahun ke-{today.year - start.year}", "date": anniversary})
+                    
+        contract_reminders.sort(key=lambda x: x["date"])
                         
         pending_leaves = LeaveRequest.query.filter_by(status='PENDING').all()
         

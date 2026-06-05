@@ -122,8 +122,51 @@ def history():
 @login_required
 @role_required('ADMIN', 'SUPERADMIN')
 def manage_leaves():
-    leaves = LeaveRequest.query.order_by(LeaveRequest.created_at.desc()).all()
-    return render_template('admin/manage_leaves.html', leaves=leaves)
+    from flask import request
+    from datetime import date
+    from app.models.employee import Employee
+    
+    query = LeaveRequest.query.join(Employee)
+    
+    jabatan_filter = request.args.get('jabatan')
+    if jabatan_filter:
+        query = query.filter(Employee.jabatan == jabatan_filter)
+        
+    all_leaves = query.all()
+    
+    masa_kerja_filter = request.args.get('masa_kerja')
+    today = date.today()
+    
+    filtered_leaves = []
+    for req in all_leaves:
+        keep = True
+        emp = req.employee
+        if masa_kerja_filter and emp.tanggal_mulai_bekerja:
+            days_worked = (today - emp.tanggal_mulai_bekerja).days
+            years_worked = days_worked / 365.25
+            if masa_kerja_filter == '<1' and years_worked >= 1:
+                keep = False
+            elif masa_kerja_filter == '1-3' and (years_worked < 1 or years_worked > 3):
+                keep = False
+            elif masa_kerja_filter == '>3' and years_worked <= 3:
+                keep = False
+        elif masa_kerja_filter and not emp.tanggal_mulai_bekerja:
+            keep = False
+            
+        if keep:
+            filtered_leaves.append(req)
+            
+    pending_leaves = [l for l in filtered_leaves if l.status == 'PENDING']
+    history_leaves = [l for l in filtered_leaves if l.status != 'PENDING']
+    
+    # Sort them (pending ascending by created_at, history descending by created_at)
+    pending_leaves.sort(key=lambda x: x.created_at)
+    history_leaves.sort(key=lambda x: x.created_at, reverse=True)
+    
+    jabatan_list = db.session.query(Employee.jabatan).distinct().all()
+    jabatan_list = [j[0] for j in jabatan_list if j[0]]
+    
+    return render_template('admin/manage_leaves.html', pending_leaves=pending_leaves, history_leaves=history_leaves, jabatan_list=jabatan_list)
 
 @login_required
 @role_required('ADMIN', 'SUPERADMIN')

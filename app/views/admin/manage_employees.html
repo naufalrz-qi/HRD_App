@@ -8,104 +8,132 @@
     </div>
 </div>
 
-<div class="card mb-4" style="background-color: var(--bg-color);">
-    <h4>Import Data Excel</h4>
-    <form method="POST" action="{{ url_for('employee_controller.import_excel') }}" enctype="multipart/form-data" class="flex gap-2 items-center">
-        <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required style="width: auto;">
-        <button type="submit" class="btn btn-success">Import</button>
-    </form>
-    <small class="text-muted">Pastikan format kolom sesuai dengan template Excel yang disepakati.</small>
-</div>
+<details class="card mb-4 details-custom" style="padding: 0; background-color: var(--bg-color);">
+    <summary style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 1.1rem; font-weight: 600;">
+        <span>Import Data Excel</span>
+        <span class="icon-chevron">▼</span>
+    </summary>
+    <div style="padding: 0 1.5rem 1.5rem 1.5rem; cursor: default;">
+        <form method="POST" action="{{ url_for('employee_controller.import_excel') }}" enctype="multipart/form-data" class="flex gap-2 items-center">
+            <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required style="width: auto;">
+            <button type="submit" class="btn btn-success">Import</button>
+        </form>
+        <small class="text-muted" style="display: block; margin-top: 0.5rem;">Pastikan format kolom sesuai dengan template Excel yang disepakati.</small>
+    </div>
+</details>
 
-<div class="card mb-4">
-    <h4>Filter & Export Data</h4>
-    <form method="GET" action="{{ url_for('employee_controller.index') }}" id="filterForm">
-        <div class="grid grid-cols-3 mb-4">
-            <div class="form-group">
-                <label class="form-label">Role</label>
-                <select name="role" class="form-control">
-                    <option value="">Semua Role</option>
-                    <option value="PEGAWAI" {% if request.args.get('role') == 'PEGAWAI' %}selected{% endif %}>PEGAWAI</option>
-                    {% if session.get('role') == 'SUPERADMIN' %}
-                    <option value="ADMIN" {% if request.args.get('role') == 'ADMIN' %}selected{% endif %}>ADMIN</option>
-                    <option value="SUPERADMIN" {% if request.args.get('role') == 'SUPERADMIN' %}selected{% endif %}>SUPERADMIN</option>
-                    {% endif %}
-                </select>
+<details class="card mb-4 details-custom" style="padding: 0;">
+    <summary style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 1.1rem; font-weight: 600;">
+        <span>Filter & Export Data</span>
+        <span class="icon-chevron">▼</span>
+    </summary>
+    <div style="padding: 0 1.5rem 1.5rem 1.5rem; cursor: default;">
+        <form method="GET" action="{{ url_for('employee_controller.index') }}" id="filterForm">
+            <div class="grid grid-cols-4 mb-4 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-control">
+                        <option value="">Semua Role</option>
+                        <option value="PEGAWAI" {% if request.args.get('role') == 'PEGAWAI' %}selected{% endif %}>PEGAWAI</option>
+                        {% if session.get('role') == 'SUPERADMIN' %}
+                        <option value="ADMIN" {% if request.args.get('role') == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                        <option value="SUPERADMIN" {% if request.args.get('role') == 'SUPERADMIN' %}selected{% endif %}>SUPERADMIN</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status Aktif</label>
+                    <select name="status" class="form-control">
+                        <option value="">Semua Status</option>
+                        <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>Aktif</option>
+                        <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>Nonaktif</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Divisi</label>
+                    <select name="divisi" class="form-control">
+                        <option value="">Semua Divisi</option>
+                        {% for d in divisi_list %}
+                        <option value="{{ d }}" {% if request.args.get('divisi') == d %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bulan Masuk</label>
+                    <select name="bulan_masuk" class="form-control">
+                        <option value="">Semua Bulan</option>
+                        <option value="1" {% if request.args.get('bulan_masuk') == '1' %}selected{% endif %}>Januari</option>
+                        <option value="2" {% if request.args.get('bulan_masuk') == '2' %}selected{% endif %}>Februari</option>
+                        <option value="3" {% if request.args.get('bulan_masuk') == '3' %}selected{% endif %}>Maret</option>
+                        <option value="4" {% if request.args.get('bulan_masuk') == '4' %}selected{% endif %}>April</option>
+                        <option value="5" {% if request.args.get('bulan_masuk') == '5' %}selected{% endif %}>Mei</option>
+                        <option value="6" {% if request.args.get('bulan_masuk') == '6' %}selected{% endif %}>Juni</option>
+                        <option value="7" {% if request.args.get('bulan_masuk') == '7' %}selected{% endif %}>Juli</option>
+                        <option value="8" {% if request.args.get('bulan_masuk') == '8' %}selected{% endif %}>Agustus</option>
+                        <option value="9" {% if request.args.get('bulan_masuk') == '9' %}selected{% endif %}>September</option>
+                        <option value="10" {% if request.args.get('bulan_masuk') == '10' %}selected{% endif %}>Oktober</option>
+                        <option value="11" {% if request.args.get('bulan_masuk') == '11' %}selected{% endif %}>November</option>
+                        <option value="12" {% if request.args.get('bulan_masuk') == '12' %}selected{% endif %}>Desember</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sisa Cuti</label>
+                    <select name="punya_cuti" class="form-control">
+                        <option value="">Semua</option>
+                        <option value="1" {% if request.args.get('punya_cuti') == '1' %}selected{% endif %}>Punya Sisa</option>
+                        <option value="0" {% if request.args.get('punya_cuti') == '0' %}selected{% endif %}>Habis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status Kontrak</label>
+                    <select name="status_kontrak" class="form-control">
+                        <option value="">Semua Status</option>
+                        <option value="Aman" {% if request.args.get('status_kontrak') == 'Aman' %}selected{% endif %}>Aman</option>
+                        <option value="Habis Masa Training" {% if request.args.get('status_kontrak') == 'Habis Masa Training' %}selected{% endif %}>Habis Masa Training</option>
+                        <option value="Perpanjangan Kontrak" {% if request.args.get('status_kontrak') == 'Perpanjangan Kontrak' %}selected{% endif %}>Perlu Perpanjang</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jabatan</label>
+                    <select name="jabatan" class="form-control">
+                        <option value="">Semua Jabatan</option>
+                        {% for j in jabatan_list %}
+                        <option value="{{ j }}" {% if request.args.get('jabatan') == j %}selected{% endif %}>{{ j }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Masa Kerja</label>
+                    <select name="masa_kerja" class="form-control">
+                        <option value="">Semua Masa Kerja</option>
+                        <option value="<1" {% if request.args.get('masa_kerja') == '<1' %}selected{% endif %}>Kurang dari 1 Tahun</option>
+                        <option value="1-3" {% if request.args.get('masa_kerja') == '1-3' %}selected{% endif %}>1 - 3 Tahun</option>
+                        <option value=">3" {% if request.args.get('masa_kerja') == '>3' %}selected{% endif %}>Lebih dari 3 Tahun</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Status Aktif</label>
-                <select name="status" class="form-control">
-                    <option value="">Semua Status</option>
-                    <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>Aktif</option>
-                    <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>Nonaktif</option>
-                </select>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">Filter Data</button>
+                <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Reset</a>
+                <button type="button" class="btn btn-success" onclick="exportData()">Export Excel</button>
             </div>
-            <div class="form-group">
-                <label class="form-label">Divisi</label>
-                <select name="divisi" class="form-control">
-                    <option value="">Semua Divisi</option>
-                    {% for d in divisi_list %}
-                    <option value="{{ d }}" {% if request.args.get('divisi') == d %}selected{% endif %}>{{ d }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Bulan Masuk</label>
-                <select name="bulan_masuk" class="form-control">
-                    <option value="">Semua Bulan</option>
-                    <option value="1" {% if request.args.get('bulan_masuk') == '1' %}selected{% endif %}>Januari</option>
-                    <option value="2" {% if request.args.get('bulan_masuk') == '2' %}selected{% endif %}>Februari</option>
-                    <option value="3" {% if request.args.get('bulan_masuk') == '3' %}selected{% endif %}>Maret</option>
-                    <option value="4" {% if request.args.get('bulan_masuk') == '4' %}selected{% endif %}>April</option>
-                    <option value="5" {% if request.args.get('bulan_masuk') == '5' %}selected{% endif %}>Mei</option>
-                    <option value="6" {% if request.args.get('bulan_masuk') == '6' %}selected{% endif %}>Juni</option>
-                    <option value="7" {% if request.args.get('bulan_masuk') == '7' %}selected{% endif %}>Juli</option>
-                    <option value="8" {% if request.args.get('bulan_masuk') == '8' %}selected{% endif %}>Agustus</option>
-                    <option value="9" {% if request.args.get('bulan_masuk') == '9' %}selected{% endif %}>September</option>
-                    <option value="10" {% if request.args.get('bulan_masuk') == '10' %}selected{% endif %}>Oktober</option>
-                    <option value="11" {% if request.args.get('bulan_masuk') == '11' %}selected{% endif %}>November</option>
-                    <option value="12" {% if request.args.get('bulan_masuk') == '12' %}selected{% endif %}>Desember</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Sisa Cuti</label>
-                <select name="punya_cuti" class="form-control">
-                    <option value="">Semua</option>
-                    <option value="1" {% if request.args.get('punya_cuti') == '1' %}selected{% endif %}>Punya Sisa</option>
-                    <option value="0" {% if request.args.get('punya_cuti') == '0' %}selected{% endif %}>Habis</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Status Kontrak</label>
-                <select name="status_kontrak" class="form-control">
-                    <option value="">Semua Status</option>
-                    <option value="Aman" {% if request.args.get('status_kontrak') == 'Aman' %}selected{% endif %}>Aman</option>
-                    <option value="Habis Masa Training" {% if request.args.get('status_kontrak') == 'Habis Masa Training' %}selected{% endif %}>Habis Masa Training</option>
-                    <option value="Perpanjangan Kontrak" {% if request.args.get('status_kontrak') == 'Perpanjangan Kontrak' %}selected{% endif %}>Perlu Perpanjang</option>
-                </select>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn btn-primary">Filter Data</button>
-            <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Reset</a>
-            <button type="button" class="btn btn-success" onclick="exportData()">Export Excel</button>
-        </div>
-    </form>
-    
-    <script>
-        function exportData() {
-            var form = document.getElementById('filterForm');
-            var oldAction = form.action;
-            form.action = "{{ url_for('employee_controller.export_excel') }}";
-            form.submit();
-            form.action = oldAction;
-        }
-    </script>
-</div>
+        </form>
+        
+        <script>
+            function exportData() {
+                var form = document.getElementById('filterForm');
+                var oldAction = form.action;
+                form.action = "{{ url_for('employee_controller.export_excel') }}";
+                form.submit();
+                form.action = oldAction;
+            }
+        </script>
+    </div>
+</details>
 
 <div class="card">
     <div style="overflow-x: auto;">
-        <table>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Nama</th>
@@ -113,6 +141,7 @@
                     <th>Role / Status</th>
                     <th>Divisi</th>
                     <th>Jabatan</th>
+                    <th>Tanggal Masuk</th>
                     <th>Masa Kerja</th>
                     <th>Hak Cuti</th>
                     <th>Aksi</th>
@@ -142,6 +171,13 @@
                     <td>
                         {% if emp.tanggal_mulai_bekerja %}
                             {{ emp.tanggal_mulai_bekerja.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if emp.tanggal_mulai_bekerja %}
+                            <span class="badge badge-pending" style="background-color: var(--card-bg); border: 1px solid var(--primary); color: var(--text-main);">{{ emp.get_masa_kerja() }}</span>
                         {% else %}
                             -
                         {% endif %}

@@ -26,11 +26,14 @@
     </div>
     
     <div class="card" style="border-left: 4px solid var(--danger);">
-        <h3>Reminder Perpanjangan Kontrak</h3>
+        <h3>Reminder Kontrak (Bulan Ini)</h3>
         <p style="font-size: 2.5rem; font-weight: 700; color: var(--danger); margin: 0;">{{ contracts|length }}</p>
         <ul style="margin-top: 1rem; padding-left: 1rem;">
             {% for c in contracts %}
-                <li>{{ c.employee.nama }} - <span style="font-size: 0.8rem;" class="badge badge-pending">{{ c.type }}</span></li>
+                <li>
+                    <strong>{{ c.employee.nama }}</strong> ({{ c.date.strftime('%d %b') }})<br>
+                    <span style="font-size: 0.8rem; margin-top: 4px; display: inline-block;" class="badge badge-pending">{{ c.type }}</span>
+                </li>
             {% endfor %}
         </ul>
     </div>

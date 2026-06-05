@@ -28,6 +28,10 @@ def _get_filtered_users(req):
     if divisi_filter:
         query = query.filter(Employee.divisi == divisi_filter)
         
+    jabatan_filter = req.args.get('jabatan')
+    if jabatan_filter:
+        query = query.filter(Employee.jabatan == jabatan_filter)
+        
     employees = query.all()
     
     # Filter tambahan yang butuh logic python
@@ -67,6 +71,19 @@ def _get_filtered_users(req):
         elif status_kontrak and not emp.tanggal_mulai_bekerja:
             keep = False
             
+        masa_kerja_filter = req.args.get('masa_kerja')
+        if masa_kerja_filter and emp.tanggal_mulai_bekerja:
+            days_worked = (today - emp.tanggal_mulai_bekerja).days
+            years_worked = days_worked / 365.25
+            if masa_kerja_filter == '<1' and years_worked >= 1:
+                keep = False
+            elif masa_kerja_filter == '1-3' and (years_worked < 1 or years_worked > 3):
+                keep = False
+            elif masa_kerja_filter == '>3' and years_worked <= 3:
+                keep = False
+        elif masa_kerja_filter and not emp.tanggal_mulai_bekerja:
+            keep = False
+            
         if keep:
             filtered_emps.append(emp)
             
@@ -95,7 +112,11 @@ def index():
     divisi_list = db.session.query(Employee.divisi).distinct().all()
     divisi_list = [d[0] for d in divisi_list if d[0]]
     
-    return render_template('admin/manage_employees.html', employees=employees, divisi_list=divisi_list)
+    # Ambil list jabatan unik buat dropdown
+    jabatan_list = db.session.query(Employee.jabatan).distinct().all()
+    jabatan_list = [j[0] for j in jabatan_list if j[0]]
+    
+    return render_template('admin/manage_employees.html', employees=employees, divisi_list=divisi_list, jabatan_list=jabatan_list)
 
 @login_required
 @role_required('ADMIN', 'SUPERADMIN')

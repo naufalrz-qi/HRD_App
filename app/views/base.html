@@ -369,7 +369,42 @@
         .mt-4 { margin-top: 1.5rem; }
         .mb-4 { margin-bottom: 1.5rem; }
         .text-muted { color: var(--text-muted); }
+        
+        /* Custom Datatables Dark Mode overrides */
+        body.dark-mode .dataTable-wrapper { color: var(--text-main); }
+        body.dark-mode .dataTable-selector, body.dark-mode .dataTable-input { 
+            background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--card-border); 
+        }
+        body.dark-mode .dataTable-pagination a {
+            color: var(--text-main);
+        }
+        body.dark-mode .dataTable-pagination a:hover {
+            background-color: var(--card-border);
+        }
+        body.dark-mode .dataTable-pagination .active a {
+            background-color: var(--primary);
+            color: white;
+        }
+        .dataTable-wrapper .dataTable-container {
+            overflow-x: auto;
+        }
+
+        /* Custom Details/Summary */
+        details.details-custom > summary {
+            list-style: none;
+        }
+        details.details-custom > summary::-webkit-details-marker {
+            display: none;
+        }
+        details.details-custom > summary .icon-chevron {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        details[open].details-custom > summary .icon-chevron {
+            transform: rotate(180deg);
+        }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
     <nav class="navbar">
@@ -442,6 +477,27 @@
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tables = document.querySelectorAll('.table');
+            tables.forEach(table => {
+                new simpleDatatables.DataTable(table, {
+                    searchable: true,
+                    sortable: true,
+                    fixedHeight: false,
+                    perPage: 10,
+                    labels: {
+                        placeholder: "Cari data...",
+                        perPage: "data per hal",
+                        noRows: "Tidak ada data ditemukan",
+                        info: "Menampilkan {start} sampai {end} dari total {rows} data",
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
