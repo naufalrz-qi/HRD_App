@@ -15,7 +15,7 @@ instance/
 *.db
 
 # Specific files ignored
-"Database tes (1).xlsx"
+Database tes (1).xlsx
 
 # Project files
 .vscode/
