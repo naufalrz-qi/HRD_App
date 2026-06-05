@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Dashboard HR/Admin</h2>
+    <p class="text-muted">Ringkasan pengajuan cuti dan reminder karyawan.</p>
+</div>
+
+<div class="grid grid-cols-3">
+    <div class="card" style="border-left: 4px solid var(--info);">
+        <h3>Pengajuan Cuti (Menunggu)</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--info); margin: 0;">{{ pending_leaves|length }}</p>
+        <div class="mt-4">
+            <a href="{{ url_for('leave_controller.manage_leaves') }}" class="btn btn-outline btn-sm">Kelola Cuti</a>
+        </div>
+    </div>
+    
+    <div class="card" style="border-left: 4px solid var(--warning);">
+        <h3>Reminder Ulang Tahun (Bulan Ini)</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--warning); margin: 0;">{{ birthdays|length }}</p>
+        <ul style="margin-top: 1rem; padding-left: 1rem;">
+            {% for u in birthdays %}
+                <li>{{ u.nama }} ({{ u.tanggal_lahir.strftime('%d %b') }})</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="card" style="border-left: 4px solid var(--danger);">
+        <h3>Reminder Perpanjangan Kontrak</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--danger); margin: 0;">{{ contracts|length }}</p>
+        <ul style="margin-top: 1rem; padding-left: 1rem;">
+            {% for c in contracts %}
+                <li>{{ c.employee.nama }} - <span style="font-size: 0.8rem;" class="badge badge-pending">{{ c.type }}</span></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <h3>Akses Cepat</h3>
+    <div class="flex gap-2 mt-4">
+        <a href="{{ url_for('employee_controller.create') }}" class="btn btn-primary">Tambah Pegawai Baru</a>
+        <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Lihat Semua Data Pegawai</a>
+    </div>
+</div>
+{% endblock %}

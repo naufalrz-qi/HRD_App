@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Dashboard Karyawan</h2>
+    <p class="text-muted">Selamat datang, {{ user.employee.nama if user.employee else 'Karyawan' }}. Berikut adalah ringkasan cuti Anda.</p>
+</div>
+
+<div class="grid grid-cols-3">
+    <div class="card">
+        <h3>Total Hak Cuti Tahunan</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--primary); margin: 0;">{{ (user.employee.hak_cuti_tahunan + user.employee.sisa_cuti_tambahan) if user.employee else 0 }}</p>
+        <p class="text-muted" style="font-size: 0.875rem;">Termasuk cuti tambahan (jika ada)</p>
+    </div>
+    <div class="card">
+        <h3>Cuti Terpakai</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--warning); margin: 0;">{{ user.employee.cuti_terpakai if user.employee else 0 }}</p>
+    </div>
+    <div class="card">
+        <h3>Sisa Cuti</h3>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--success); margin: 0;">{{ sisa_cuti }}</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="flex justify-between items-center mb-4">
+        <h3>Pengajuan Cuti Terakhir</h3>
+        <a href="{{ url_for('leave_controller.request_leave') }}" class="btn btn-primary">Ajukan Cuti Baru</a>
+    </div>
+    
+    {% if recent_requests %}
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal Mulai</th>
+                <th>Tanggal Selesai</th>
+                <th>Jumlah Hari</th>
+                <th>Alasan</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in recent_requests %}
+            <tr>
+                <td>{{ req.tanggal_mulai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.jumlah_hari }} hari</td>
+                <td>
+                    {{ req.alasan }}
+                    {% if req.status == 'REJECTED' and req.alasan_tolak %}
+                        <br><small style="color: var(--danger); font-weight: 600;">Ditolak: {{ req.alasan_tolak }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == 'APPROVED' %}
+                        <span class="badge badge-approved">Disetujui</span>
+                    {% elif req.status == 'REJECTED' %}
+                        <span class="badge badge-rejected">Ditolak</span>
+                    {% else %}
+                        <span class="badge badge-pending">Menunggu</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Belum ada riwayat pengajuan cuti.</p>
+    {% endif %}
+</div>
+{% endblock %}

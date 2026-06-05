@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Kelola Pengajuan Cuti</h2>
+    <p class="text-muted">Daftar semua pengajuan cuti karyawan.</p>
+    
+    {% if leaves %}
+    <table>
+        <thead>
+            <tr>
+                <th>Karyawan</th>
+                <th>Tanggal Mulai</th>
+                <th>Tanggal Selesai</th>
+                <th>Jumlah Hari</th>
+                <th>Alasan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in leaves %}
+            <tr>
+                <td><strong>{{ req.employee.nama }}</strong><br><small class="text-muted">{{ req.employee.jabatan }} - {{ req.employee.divisi }}</small></td>
+                <td>{{ req.tanggal_mulai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.jumlah_hari }}</td>
+                <td>
+                    {{ req.alasan }}
+                    {% if req.status == 'REJECTED' and req.alasan_tolak %}
+                        <br><small style="color: var(--danger); font-weight: 600;">Ditolak: {{ req.alasan_tolak }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == 'APPROVED' %}
+                        <span class="badge badge-approved">Disetujui</span>
+                    {% elif req.status == 'REJECTED' %}
+                        <span class="badge badge-rejected">Ditolak</span>
+                    {% else %}
+                        <span class="badge badge-pending">Menunggu</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == 'PENDING' %}
+                        <form method="POST" action="{{ url_for('leave_controller.approve_leave', leave_id=req.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">ACC</button>
+                        </form>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('reject-modal-{{req.id}}').style.display='flex'">Tolak</button>
+                        
+                        <!-- Modal Reject Cuti -->
+                        <div id="reject-modal-{{req.id}}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+                            <div class="card" style="width:400px; text-align: left; margin:0; max-height: 90vh; overflow-y: auto;">
+                                <h3>Tolak Pengajuan Cuti</h3>
+                                <p>Untuk: <strong>{{ req.employee.nama }}</strong></p>
+                                <form method="POST" action="{{ url_for('leave_controller.reject_leave', leave_id=req.id) }}">
+                                    <div class="form-group">
+                                        <label class="form-label">Alasan Penolakan</label>
+                                        <textarea name="alasan_tolak" class="form-control" rows="3" required placeholder="Wajib diisi..."></textarea>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="submit" class="btn btn-danger">Tolak Cuti</button>
+                                        <button type="button" class="btn btn-outline" onclick="document.getElementById('reject-modal-{{req.id}}').style.display='none'">Batal</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Belum ada pengajuan cuti.</p>
+    {% endif %}
+</div>
+{% endblock %}

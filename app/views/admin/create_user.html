@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Tambah Data User</h2>
+    <form method="POST" action="{{ url_for('user_controller.create') }}" class="mt-4">
+        
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+            <small class="text-muted">User akan diminta ganti password saat pertama login.</small>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-control" required>
+                <option value="PEGAWAI">PEGAWAI</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="SUPERADMIN">SUPERADMIN</option>
+            </select>
+        </div>
+        
+        <div class="flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Simpan User</button>
+            <a href="{{ url_for('user_controller.index') }}" class="btn btn-outline">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

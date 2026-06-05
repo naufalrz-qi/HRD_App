@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.env
+
+# Database
+instance/
+*.sqlite3
+*.db
+
+# Specific files ignored
+"Database tes (1).xlsx"
+
+# Project files
+.vscode/
+.idea/

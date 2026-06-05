@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="flex justify-between items-center mb-4">
+        <h2>Riwayat Pengajuan Cuti</h2>
+        <a href="{{ url_for('leave_controller.request_leave') }}" class="btn btn-primary">Ajukan Cuti Baru</a>
+    </div>
+    
+    {% if requests %}
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal Pengajuan</th>
+                <th>Tanggal Mulai</th>
+                <th>Tanggal Selesai</th>
+                <th>Jumlah Hari</th>
+                <th>Alasan</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                <td>{{ req.tanggal_mulai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
+                <td>{{ req.jumlah_hari }} hari</td>
+                <td>
+                    {{ req.alasan }}
+                    {% if req.status == 'REJECTED' and req.alasan_tolak %}
+                        <br><small style="color: var(--danger); font-weight: 600;">Ditolak: {{ req.alasan_tolak }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == 'APPROVED' %}
+                        <span class="badge badge-approved">Disetujui</span>
+                    {% elif req.status == 'REJECTED' %}
+                        <span class="badge badge-rejected">Ditolak</span>
+                    {% else %}
+                        <span class="badge badge-pending">Menunggu</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Belum ada riwayat pengajuan cuti.</p>
+    {% endif %}
+</div>
+{% endblock %}

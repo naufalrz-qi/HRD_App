@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <h2>Edit Data Karyawan</h2>
+    
+    <form method="POST" action="{{ url_for('employee_controller.edit', employee_id=employee.id) }}">
+        <div class="grid grid-cols-2" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="form-label" for="user_id">Akun Login (Opsional)</label>
+                <select id="user_id" name="user_id" class="form-control">
+                    <option value="">-- Karyawan Tanpa Akun Login --</option>
+                    {% for u in available_users %}
+                        <option value="{{ u.id }}" {% if employee.user_id == u.id %}selected{% endif %}>{{ u.email }} ({{ u.role }})</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Pilih akun jika karyawan ini butuh akses ke sistem.</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="nama">Nama Lengkap</label>
+                <input type="text" id="nama" name="nama" class="form-control" value="{{ employee.nama }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="divisi">Divisi</label>
+                <input type="text" id="divisi" name="divisi" class="form-control" value="{{ employee.divisi }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="jabatan">Jabatan</label>
+                <input type="text" id="jabatan" name="jabatan" class="form-control" value="{{ employee.jabatan }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="jabatan_2">Jabatan 2</label>
+                <input type="text" id="jabatan_2" name="jabatan_2" class="form-control" value="{{ employee.jabatan_2 }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="tanggal_lahir">Tanggal Lahir</label>
+                <input type="date" id="tanggal_lahir" name="tanggal_lahir" class="form-control" value="{{ employee.tanggal_lahir.strftime('%Y-%m-%d') if employee.tanggal_lahir else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="tanggal_mulai_bekerja">Tanggal Mulai Bekerja</label>
+                <input type="date" id="tanggal_mulai_bekerja" name="tanggal_mulai_bekerja" class="form-control" value="{{ employee.tanggal_mulai_bekerja.strftime('%Y-%m-%d') if employee.tanggal_mulai_bekerja else '' }}">
+            </div>
+
+        </div>
+        
+        <div class="flex gap-2" style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">Update Data</button>
+            <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

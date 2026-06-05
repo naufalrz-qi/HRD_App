@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Data Karyawan</h2>
+    <div class="flex gap-2">
+        <a href="{{ url_for('employee_controller.create') }}" class="btn btn-primary">Tambah Karyawan</a>
+    </div>
+</div>
+
+<div class="card mb-4" style="background-color: var(--bg-color);">
+    <h4>Import Data Excel</h4>
+    <form method="POST" action="{{ url_for('employee_controller.import_excel') }}" enctype="multipart/form-data" class="flex gap-2 items-center">
+        <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required style="width: auto;">
+        <button type="submit" class="btn btn-success">Import</button>
+    </form>
+    <small class="text-muted">Pastikan format kolom sesuai dengan template Excel yang disepakati.</small>
+</div>
+
+<div class="card mb-4">
+    <h4>Filter & Export Data</h4>
+    <form method="GET" action="{{ url_for('employee_controller.index') }}" id="filterForm">
+        <div class="grid grid-cols-3 mb-4">
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                <select name="role" class="form-control">
+                    <option value="">Semua Role</option>
+                    <option value="PEGAWAI" {% if request.args.get('role') == 'PEGAWAI' %}selected{% endif %}>PEGAWAI</option>
+                    {% if session.get('role') == 'SUPERADMIN' %}
+                    <option value="ADMIN" {% if request.args.get('role') == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                    <option value="SUPERADMIN" {% if request.args.get('role') == 'SUPERADMIN' %}selected{% endif %}>SUPERADMIN</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status Aktif</label>
+                <select name="status" class="form-control">
+                    <option value="">Semua Status</option>
+                    <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>Aktif</option>
+                    <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>Nonaktif</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Divisi</label>
+                <select name="divisi" class="form-control">
+                    <option value="">Semua Divisi</option>
+                    {% for d in divisi_list %}
+                    <option value="{{ d }}" {% if request.args.get('divisi') == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bulan Masuk</label>
+                <select name="bulan_masuk" class="form-control">
+                    <option value="">Semua Bulan</option>
+                    <option value="1" {% if request.args.get('bulan_masuk') == '1' %}selected{% endif %}>Januari</option>
+                    <option value="2" {% if request.args.get('bulan_masuk') == '2' %}selected{% endif %}>Februari</option>
+                    <option value="3" {% if request.args.get('bulan_masuk') == '3' %}selected{% endif %}>Maret</option>
+                    <option value="4" {% if request.args.get('bulan_masuk') == '4' %}selected{% endif %}>April</option>
+                    <option value="5" {% if request.args.get('bulan_masuk') == '5' %}selected{% endif %}>Mei</option>
+                    <option value="6" {% if request.args.get('bulan_masuk') == '6' %}selected{% endif %}>Juni</option>
+                    <option value="7" {% if request.args.get('bulan_masuk') == '7' %}selected{% endif %}>Juli</option>
+                    <option value="8" {% if request.args.get('bulan_masuk') == '8' %}selected{% endif %}>Agustus</option>
+                    <option value="9" {% if request.args.get('bulan_masuk') == '9' %}selected{% endif %}>September</option>
+                    <option value="10" {% if request.args.get('bulan_masuk') == '10' %}selected{% endif %}>Oktober</option>
+                    <option value="11" {% if request.args.get('bulan_masuk') == '11' %}selected{% endif %}>November</option>
+                    <option value="12" {% if request.args.get('bulan_masuk') == '12' %}selected{% endif %}>Desember</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sisa Cuti</label>
+                <select name="punya_cuti" class="form-control">
+                    <option value="">Semua</option>
+                    <option value="1" {% if request.args.get('punya_cuti') == '1' %}selected{% endif %}>Punya Sisa</option>
+                    <option value="0" {% if request.args.get('punya_cuti') == '0' %}selected{% endif %}>Habis</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status Kontrak</label>
+                <select name="status_kontrak" class="form-control">
+                    <option value="">Semua Status</option>
+                    <option value="Aman" {% if request.args.get('status_kontrak') == 'Aman' %}selected{% endif %}>Aman</option>
+                    <option value="Habis Masa Training" {% if request.args.get('status_kontrak') == 'Habis Masa Training' %}selected{% endif %}>Habis Masa Training</option>
+                    <option value="Perpanjangan Kontrak" {% if request.args.get('status_kontrak') == 'Perpanjangan Kontrak' %}selected{% endif %}>Perlu Perpanjang</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">Filter Data</button>
+            <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Reset</a>
+            <button type="button" class="btn btn-success" onclick="exportData()">Export Excel</button>
+        </div>
+    </form>
+    
+    <script>
+        function exportData() {
+            var form = document.getElementById('filterForm');
+            var oldAction = form.action;
+            form.action = "{{ url_for('employee_controller.export_excel') }}";
+            form.submit();
+            form.action = oldAction;
+        }
+    </script>
+</div>
+
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Role / Status</th>
+                    <th>Divisi</th>
+                    <th>Jabatan</th>
+                    <th>Masa Kerja</th>
+                    <th>Hak Cuti</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td><strong>{{ emp.nama }}</strong></td>
+                    <td>{{ emp.user.email if emp.user else '-' }}</td>
+                    <td>
+                        {% if emp.user %}
+                            <span class="badge badge-pending">{{ emp.user.role }}</span><br>
+                            {% if emp.user.is_active %}
+                                <span class="badge badge-approved" style="margin-top:4px; display:inline-block;">Aktif</span>
+                            {% else %}
+                                <span class="badge badge-rejected" style="margin-top:4px; display:inline-block;">Nonaktif</span>
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ emp.divisi if emp.divisi else '-' }}</td>
+                    <td>
+                        {{ emp.jabatan if emp.jabatan else '-' }} <br><small class="text-muted">{{ emp.jabatan_2 if emp.jabatan_2 else '' }}</small>
+                    </td>
+                    <td>
+                        {% if emp.tanggal_mulai_bekerja %}
+                            {{ emp.tanggal_mulai_bekerja.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ emp.get_total_sisa_cuti() }} / {{ emp.hak_cuti_tahunan + emp.sisa_cuti_tambahan }}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('detail-modal-{{emp.id}}').style.display='flex'">Detail</button>
+                        <a href="{{ url_for('employee_controller.edit', employee_id=emp.id) }}" class="btn btn-outline btn-sm">Edit</a>
+                        
+                        <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='flex'">+ Cuti</button>
+
+                        <form method="POST" action="{{ url_for('employee_controller.delete', employee_id=emp.id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus karyawan ini? Akun login tidak akan ikut terhapus.');">
+                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals diletakkan di luar table untuk menghindari isu z-index/transform -->
+{% for emp in employees %}
+<div id="adjust-modal-{{emp.id}}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div class="card" style="width:400px; text-align: left; margin:0; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <h3>Tambah Cuti Kompensasi</h3>
+        <p>Untuk: <strong>{{ emp.nama }}</strong></p>
+        <form method="POST" action="{{ url_for('leave_controller.adjust_leave', employee_id=emp.id) }}">
+            <div class="form-group">
+                <label class="form-label">Jumlah Hari</label>
+                <input type="number" name="jumlah_hari" class="form-control" required min="1" placeholder="Misal: 1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Alasan Kompensasi</label>
+                <textarea name="alasan" class="form-control" rows="3" required placeholder="Wajib diisi, misal: Masuk saat libur nasional..."></textarea>
+            </div>
+            <div class="flex gap-2" style="margin-top: 1rem;">
+                <button type="submit" class="btn btn-success">Simpan Cuti</button>
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='none'">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Detail Karyawan -->
+<div id="detail-modal-{{emp.id}}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div class="card" style="width:700px; text-align: left; margin:0; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="margin: 0;">Detail Karyawan: {{ emp.nama }}</h3>
+            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('detail-modal-{{emp.id}}').style.display='none'">Tutup</button>
+        </div>
+        
+        <div class="grid grid-cols-2" style="gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <p class="text-muted" style="margin:0; font-size:0.875rem;">Divisi</p>
+                <strong>{{ emp.divisi or '-' }}</strong>
+            </div>
+            <div>
+                <p class="text-muted" style="margin:0; font-size:0.875rem;">Jabatan</p>
+                <strong>{{ emp.jabatan or '-' }}</strong>
+            </div>
+            <div>
+                <p class="text-muted" style="margin:0; font-size:0.875rem;">Sisa Cuti</p>
+                <strong>{{ emp.get_total_sisa_cuti() }} Hari (Termasuk Kompensasi: {{ emp.sisa_cuti_tambahan }} Hari)</strong>
+            </div>
+            <div>
+                <p class="text-muted" style="margin:0; font-size:0.875rem;">Status Akun</p>
+                <strong>{% if emp.user %}Aktif ({{ emp.user.email }}){% else %}Tanpa Akun{% endif %}</strong>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <p class="text-muted" style="margin:0 0 0.25rem 0; font-size:0.875rem;">Hak Libur Nasional (Syarat: 3 Tahun Masa Kerja)</p>
+            {% if emp.is_senior_eligible() %}
+                <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.3rem 0.6rem; background-color: var(--success); color: white; border-radius: 4px;">✅ Eligible Libur Nasional</span>
+            {% else %}
+                <span class="badge badge-warning" style="font-size: 0.85rem; padding: 0.3rem 0.6rem; background-color: var(--warning); color: white; border-radius: 4px;">⏳ Belum Eligible Libur Nasional</span>
+            {% endif %}
+        </div>
+
+        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+
+        <h4>Riwayat Pengajuan Cuti</h4>
+        {% if emp.leave_requests %}
+        <div style="max-height: 200px; overflow-y: auto; margin-bottom: 1.5rem;">
+            <table style="width: 100%; margin: 0; font-size: 0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="padding: 0.5rem;">Tanggal</th>
+                        <th style="padding: 0.5rem;">Jml Hari</th>
+                        <th style="padding: 0.5rem;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in emp.leave_requests|sort(attribute='created_at', reverse=true) %}
+                    <tr>
+                        <td style="padding: 0.5rem;">{{ req.tanggal_mulai.strftime('%d-%m-%Y') }} s/d {{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
+                        <td style="padding: 0.5rem;">{{ req.jumlah_hari }}</td>
+                        <td style="padding: 0.5rem;">
+                            {% if req.status == 'APPROVED' %}
+                                <span class="badge badge-approved" style="font-size: 0.75rem;">Disetujui</span>
+                            {% elif req.status == 'REJECTED' %}
+                                <span class="badge badge-rejected" style="font-size: 0.75rem;">Ditolak</span>
+                            {% else %}
+                                <span class="badge badge-pending" style="font-size: 0.75rem;">Menunggu</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="margin-bottom: 1.5rem;">Belum ada riwayat pengajuan cuti.</p>
+        {% endif %}
+
+        <h4>Riwayat Cuti Kompensasi (Tambahan)</h4>
+        {% if emp.compensation_histories %}
+        <div style="max-height: 200px; overflow-y: auto;">
+            <table style="width: 100%; margin: 0; font-size: 0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="padding: 0.5rem;">Tanggal</th>
+                        <th style="padding: 0.5rem;">Hari</th>
+                        <th style="padding: 0.5rem;">Alasan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hist in emp.compensation_histories|sort(attribute='created_at', reverse=true) %}
+                    <tr>
+                        <td style="padding: 0.5rem;">{{ hist.created_at.strftime('%d-%m-%Y') }}</td>
+                        <td style="padding: 0.5rem; color: var(--success); font-weight: bold;">+{{ hist.jumlah_hari }}</td>
+                        <td style="padding: 0.5rem;">{{ hist.alasan }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Belum ada riwayat penambahan cuti kompensasi.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endfor %}
+{% endblock %}

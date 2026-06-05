@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Edit Data User</h2>
+    <form method="POST" action="{{ url_for('user_controller.edit', user_id=user.id) }}" class="mt-4">
+        
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Password Baru (Opsional)</label>
+            <input type="password" name="password" class="form-control" minlength="6">
+            <small class="text-muted">Isi jika ingin mereset password user ini. User akan diminta menggantinya lagi saat login.</small>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-control" required>
+                <option value="PEGAWAI" {% if user.role == 'PEGAWAI' %}selected{% endif %}>PEGAWAI</option>
+                <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                <option value="SUPERADMIN" {% if user.role == 'SUPERADMIN' %}selected{% endif %}>SUPERADMIN</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Status Aktif</label>
+            <select name="is_active" class="form-control" required>
+                <option value="1" {% if user.is_active %}selected{% endif %}>Aktif</option>
+                <option value="0" {% if not user.is_active %}selected{% endif %}>Nonaktif</option>
+            </select>
+        </div>
+        
+        <div class="flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Update User</button>
+            <a href="{{ url_for('user_controller.index') }}" class="btn btn-outline">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
