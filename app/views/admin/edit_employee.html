@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 
+{% block page_title %}Edit Karyawan{% endblock %}
+{% block breadcrumb %}Data Master / Karyawan / Edit{% endblock %}
+
 {% block content %}
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <h2>Edit Data Karyawan</h2>
     
     <form method="POST" action="{{ url_for('employee_controller.edit', employee_id=employee.id) }}">
-        <div class="grid grid-cols-2" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid grid-cols-2" style="gap: 1rem;">
             
-            <div class="form-group" style="grid-column: span 2;">
+            <div class="form-group col-span-2">
                 <label class="form-label" for="user_id">Akun Login (Opsional)</label>
                 <select id="user_id" name="user_id" class="form-control">
                     <option value="">-- Karyawan Tanpa Akun Login --</option>

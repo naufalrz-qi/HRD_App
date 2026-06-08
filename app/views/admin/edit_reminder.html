@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit Kontak Reminder{% endblock %}
+{% block breadcrumb %}Kelola / Reminder / Edit{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <h2 style="margin-bottom: 1.5rem;">Edit Kontak Reminder</h2>
+    
+    <form action="{{ url_for('admin.edit_reminder', id=contact.id) }}" method="POST">
+        <div class="form-group">
+            <label class="form-label">Tautkan ke Karyawan (Opsional)</label>
+            <select name="employee_id" class="form-control">
+                <option value="">-- Pilih Karyawan --</option>
+                {% for emp in employees %}
+                <option value="{{ emp.id }}" {% if contact.employee_id == emp.id %}selected{% endif %}>{{ emp.nama }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Nama (Bila tidak ditautkan)</label>
+            <input type="text" name="nama" class="form-control" value="{{ contact.nama or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Nomor WhatsApp (Gunakan +62...)</label>
+            <input type="text" name="nomor_telepon" class="form-control" required value="{{ contact.nomor_telepon }}">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Kategori (Label)</label>
+            <input type="text" name="kategori" class="form-control" value="{{ contact.kategori or '' }}" placeholder="Contoh: HRD, Admin, Karyawan">
+        </div>
+        
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+            <input type="checkbox" name="is_active" id="is_active" value="1" {% if contact.is_active %}checked{% endif %} style="width: 1rem; height: 1rem;">
+            <label for="is_active" class="form-label" style="margin-bottom: 0;">Aktif Terima Notifikasi</label>
+        </div>
+        
+        <div class="flex gap-2" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            <a href="{{ url_for('admin.manage_reminders') }}" class="btn btn-outline">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

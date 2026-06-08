@@ -14,6 +14,9 @@ class Employee(db.Model):
     tanggal_lahir = db.Column(db.Date)
     tanggal_mulai_bekerja = db.Column(db.Date)
     
+    status_karyawan = db.Column(db.String(50), default='Kontrak')
+    tanggal_berakhir_kontrak = db.Column(db.Date, nullable=True)
+    
     hak_cuti_tahunan = db.Column(db.Integer, default=0)
     cuti_terpakai = db.Column(db.Integer, default=0)
     sisa_cuti_tambahan = db.Column(db.Integer, default=0)

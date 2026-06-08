@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 
+{% block page_title %}Tambah Karyawan{% endblock %}
+{% block breadcrumb %}Data Master / Karyawan / Tambah{% endblock %}
+
 {% block content %}
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <h2>Tambah Karyawan Baru</h2>
     
     <form method="POST" action="{{ url_for('employee_controller.create') }}">
-        <div class="grid grid-cols-2" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid grid-cols-2" style="gap: 1rem;">
             <div class="form-group">
                 <label class="form-label" for="nama">Nama Lengkap</label>
                 <input type="text" id="nama" name="nama" class="form-control" required>

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block page_title %}Kontak Reminder{% endblock %}
+{% block breadcrumb %}Kelola / Reminder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Kelola Kontak Reminder</h2>
+        <div class="d-flex gap-2">
+            <form action="{{ url_for('admin.trigger_reminder') }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menjalankan fungsi reminder sekarang? Ini akan mengirim pesan betulan ke kontak yang memenuhi syarat.');">
+                <button type="submit" class="btn btn-success">
+                    Test Jalankan Reminder
+                </button>
+            </form>
+            <a href="{{ url_for('admin.add_reminder') }}" class="btn btn-primary">
+                Tambah Kontak
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Pengaturan Jadwal Harian</h5>
+                    <form action="{{ url_for('admin.update_schedule') }}" method="POST" class="d-flex flex-wrap align-items-end gap-3 mt-3">
+                        <div>
+                            <label for="schedule_time" class="form-label">Waktu Eksekusi Harian</label>
+                            <input type="time" class="form-control" id="schedule_time" name="schedule_time" value="{{ current_time }}" required>
+                        </div>
+                        <div>
+                            <label for="max_text_limit" class="form-label" title="Batas jumlah karyawan sebelum menggunakan Excel">Batas Teks (Orang)</label>
+                            <input type="number" min="1" max="100" class="form-control" id="max_text_limit" name="max_text_limit" value="{{ max_text_limit }}" required style="width: 140px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                    </form>
+                    <small class="text-muted mt-2 d-block">Jika daftar peringatan lebih panjang dari batas ini, maka akan dikirimkan dalam format Excel.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Test Jadwal (Sekali Saja)</h5>
+                    <form action="{{ url_for('admin.schedule_test') }}" method="POST" class="d-flex align-items-end gap-3 mt-3">
+                        <div>
+                            <label for="test_time" class="form-label">Jadwalkan Test Pada Jam</label>
+                            <input type="time" class="form-control" id="test_time" name="test_time" required>
+                        </div>
+                        <button type="submit" class="btn btn-outline-info">Jadwalkan Test</button>
+                    </form>
+                    <small class="text-muted mt-2 d-block">Ini akan menjadwalkan 1x eksekusi pada jam yang ditentukan tanpa mengubah jadwal harian utama Anda.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Nomor WhatsApp</th>
+                        <th>Kategori</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ contact.get_nama() }}</td>
+                        <td>{{ contact.nomor_telepon }}</td>
+                        <td>{{ contact.kategori }}</td>
+                        <td>
+                            {% if contact.is_active %}
+                            <span class="badge badge-approved">Aktif</span>
+                            {% else %}
+                            <span class="badge badge-rejected">Non-Aktif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_reminder', id=contact.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ url_for('admin.delete_reminder', id=contact.id) }}" method="POST" class="d-inline" style="display: inline-block;" onsubmit="return confirm('Yakin ingin menghapus kontak ini?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Belum ada kontak reminder.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

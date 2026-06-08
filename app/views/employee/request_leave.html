@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 
+{% block page_title %}Ajukan Cuti{% endblock %}
+{% block breadcrumb %}Cuti / Pengajuan{% endblock %}
+
 {% block content %}
 <div class="card" style="max-width: 600px; margin: 0 auto;">
     <h2>Form Pengajuan Cuti</h2>
@@ -28,7 +31,7 @@
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-2" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid grid-cols-2" style="gap: 1rem;">
             <div class="form-group">
                 <label class="form-label" for="tanggal_mulai">Tanggal Mulai</label>
                 <input type="date" id="tanggal_mulai" name="tanggal_mulai" class="form-control" required>

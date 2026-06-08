@@ -1,21 +1,33 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="card" style="max-width: 400px; margin: 4rem auto;">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Login HR App</h2>
-    
-    <form method="POST" action="{{ url_for('auth_controller.login') }}">
-        <div class="form-group">
-            <label class="form-label" for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control" required autofocus>
+{% block auth_content %}
+<div class="login-layout">
+    <div class="login-hero">
+        <div class="login-hero-content">
+            <div class="login-hero-icon">💼</div>
+            <h1>Arunika</h1>
+            <p>Sistem manajemen sumber daya manusia terpadu untuk pengelolaan karyawan, cuti, dan kontrak.</p>
         </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="password">Password</label>
-            <input type="password" id="password" name="password" class="form-control" required>
+    </div>
+    <div class="login-form-side">
+        <div class="login-card">
+            <h2>Masuk ke Akun</h2>
+            <p class="subtitle">Masukkan kredensial Anda untuk melanjutkan.</p>
+
+            <form method="POST" action="{{ url_for('auth_controller.login') }}">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="nama@perusahaan.com" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">Masuk</button>
+            </form>
         </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

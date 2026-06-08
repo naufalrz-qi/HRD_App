@@ -1,49 +1,200 @@
 {% extends 'base.html' %}
 
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}{{ today.strftime('%A, %d %B %Y') }}{% endblock %}
+
 {% block content %}
-<div class="mb-4">
-    <h2>Dashboard HR/Admin</h2>
-    <p class="text-muted">Ringkasan pengajuan cuti dan reminder karyawan.</p>
+<!-- Greeting -->
+<div class="greeting-card mb-5">
+    <div class="greeting-text">{{ greeting }}, {{ session.get('nama', 'Admin') }}! 👋</div>
+    <div class="greeting-sub">Berikut ringkasan data HR Anda hari ini.</div>
 </div>
 
-<div class="grid grid-cols-3">
-    <div class="card" style="border-left: 4px solid var(--info);">
-        <h3>Pengajuan Cuti (Menunggu)</h3>
-        <p style="font-size: 2.5rem; font-weight: 700; color: var(--info); margin: 0;">{{ pending_leaves|length }}</p>
-        <div class="mt-4">
-            <a href="{{ url_for('leave_controller.manage_leaves') }}" class="btn btn-outline btn-sm">Kelola Cuti</a>
+<!-- Stat Cards -->
+<div class="grid grid-4 grid-mobile-2 mb-5">
+    <div class="card">
+        <div class="stat-card">
+            <div class="stat-icon primary">👥</div>
+            <div>
+                <div class="stat-value">{{ total_karyawan }}</div>
+                <div class="stat-label">Total Karyawan</div>
+            </div>
         </div>
     </div>
-    
-    <div class="card" style="border-left: 4px solid var(--warning);">
-        <h3>Reminder Ulang Tahun (Bulan Ini)</h3>
-        <p style="font-size: 2.5rem; font-weight: 700; color: var(--warning); margin: 0;">{{ birthdays|length }}</p>
-        <ul style="margin-top: 1rem; padding-left: 1rem;">
-            {% for u in birthdays %}
-                <li>{{ u.nama }} ({{ u.tanggal_lahir.strftime('%d %b') }})</li>
-            {% endfor %}
-        </ul>
+    <div class="card">
+        <div class="stat-card">
+            <div class="stat-icon warning"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div>
+                <div class="stat-value">{{ pending_leaves|length }}</div>
+                <div class="stat-label">Cuti Menunggu</div>
+            </div>
+        </div>
     </div>
-    
-    <div class="card" style="border-left: 4px solid var(--danger);">
-        <h3>Reminder Kontrak (Bulan Ini)</h3>
-        <p style="font-size: 2.5rem; font-weight: 700; color: var(--danger); margin: 0;">{{ contracts|length }}</p>
-        <ul style="margin-top: 1rem; padding-left: 1rem;">
-            {% for c in contracts %}
-                <li>
-                    <strong>{{ c.employee.nama }}</strong> ({{ c.date.strftime('%d %b') }})<br>
-                    <span style="font-size: 0.8rem; margin-top: 4px; display: inline-block;" class="badge badge-pending">{{ c.type }}</span>
-                </li>
-            {% endfor %}
-        </ul>
+    <div class="card">
+        <div class="stat-card">
+            <div class="stat-icon info">🎂</div>
+            <div>
+                <div class="stat-value">{{ birthdays|length }}</div>
+                <div class="stat-label">Ultah Bulan Ini</div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-card">
+            <div class="stat-icon danger"><i class="fa-solid fa-file-contract"></i></div>
+            <div>
+                <div class="stat-value">{{ expiring_contracts|length }}</div>
+                <div class="stat-label">Kontrak Segera Habis</div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="card mt-4">
-    <h3>Akses Cepat</h3>
-    <div class="flex gap-2 mt-4">
-        <a href="{{ url_for('employee_controller.create') }}" class="btn btn-primary">Tambah Pegawai Baru</a>
-        <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Lihat Semua Data Pegawai</a>
+<!-- Row 2: Pending Leaves + Upcoming Birthdays -->
+<div class="grid grid-2 mb-5">
+    <!-- Pending Leaves -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="margin:0; font-size:1rem;">Cuti Menunggu Persetujuan</h3>
+            <a href="{{ url_for('leave_controller.manage_leaves') }}" class="btn btn-outline btn-sm">Lihat Semua</a>
+        </div>
+        {% if pending_leaves %}
+        <div class="overflow-auto">
+            <table class="table-simple" style="width:100%;">
+                <thead><tr><th>Nama</th><th>Tanggal</th><th>Hari</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for req in pending_leaves[:5] %}
+                    <tr>
+                        <td><strong>{{ req.employee.nama }}</strong></td>
+                        <td>{{ req.tanggal_mulai.strftime('%d/%m') }} - {{ req.tanggal_selesai.strftime('%d/%m') }}</td>
+                        <td>{{ req.jumlah_hari }}</td>
+                        <td><span class="badge badge-pending">Menunggu</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-sm">Tidak ada pengajuan cuti yang menunggu persetujuan. 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- Upcoming Birthdays -->
+    <div class="card">
+        <h3 style="margin:0 0 1rem; font-size:1rem;">🎂 Ulang Tahun Mendatang</h3>
+        {% if upcoming_birthdays %}
+            {% for item in upcoming_birthdays[:6] %}
+            <div class="bday-item">
+                <div class="bday-avatar" style="background: var(--warning-light);">🎉</div>
+                <div class="bday-info">
+                    <div class="name">{{ item.employee.nama }}</div>
+                    <div class="date">
+                        {{ item.date.strftime('%d %B') }}
+                        {% if item.days_left == 0 %}
+                        — <strong style="color:var(--success);">Hari Ini!</strong>
+                        {% elif item.days_left == 1 %}
+                        — <strong style="color:var(--warning);">Besok</strong>
+                        {% else %}
+                        — {{ item.days_left }} hari lagi
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p class="text-muted text-sm">Tidak ada ulang tahun dalam 7 hari ke depan.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Row 3: Expiring Contracts + Division Distribution -->
+<div class="grid grid-2 mb-5">
+    <!-- Expiring Contracts -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="margin:0; font-size:1rem;"><i class="fa-solid fa-file-contract"></i> Kontrak Segera Habis (30 Hari)</h3>
+        </div>
+        {% if expiring_contracts %}
+        <div class="overflow-auto">
+            <table class="table-simple" style="width:100%;">
+                <thead><tr><th>Nama</th><th>Divisi</th><th>Sisa Hari</th><th>Tanggal</th></tr></thead>
+                <tbody>
+                    {% for item in expiring_contracts[:6] %}
+                    <tr>
+                        <td><strong>{{ item.employee.nama }}</strong></td>
+                        <td>{{ item.employee.divisi or '-' }}</td>
+                        <td>
+                            {% if item.days_left <= 7 %}
+                            <span class="badge badge-rejected">{{ item.days_left }} hari</span>
+                            {% else %}
+                            <span class="badge badge-pending">{{ item.days_left }} hari</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.date.strftime('%d/%m/%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-sm">Tidak ada kontrak yang akan habis dalam 30 hari ke depan.</p>
+        {% endif %}
+    </div>
+
+    <!-- Division Distribution -->
+    <div class="card">
+        <h3 style="margin:0 0 1rem; font-size:1rem;">📊 Distribusi Divisi</h3>
+        {% if divisi_distribution %}
+            {% set colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6'] %}
+            {% for divisi, count in divisi_distribution.items() %}
+            <div class="dist-bar-container">
+                <div class="dist-bar-label">
+                    <span>{{ divisi }}</span>
+                    <span>{{ count }}</span>
+                </div>
+                <div class="dist-bar">
+                    <div class="dist-bar-fill" style="width: {{ (count / max_divisi * 100)|round }}%; background: {{ colors[loop.index0 % 8] }};"></div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p class="text-muted text-sm">Belum ada data divisi.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <h3 style="margin:0 0 0.75rem; font-size:1rem;">⚡ Akses Cepat</h3>
+    <div class="grid grid-4 grid-mobile-2">
+        <a href="{{ url_for('employee_controller.create') }}" class="quick-action">
+            <div class="icon" style="background: var(--primary-light);"><i class="fa-solid fa-plus"></i></div>
+            <div>
+                <div class="label">Tambah Karyawan</div>
+                <div class="desc">Input data karyawan baru</div>
+            </div>
+        </a>
+        <a href="{{ url_for('employee_controller.index') }}" class="quick-action">
+            <div class="icon" style="background: var(--info-light);">📋</div>
+            <div>
+                <div class="label">Lihat Data</div>
+                <div class="desc">Seluruh data karyawan</div>
+            </div>
+        </a>
+        <a href="{{ url_for('leave_controller.manage_leaves') }}" class="quick-action">
+            <div class="icon" style="background: var(--warning-light);"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <div class="label">Kelola Cuti</div>
+                <div class="desc">Setujui / tolak pengajuan</div>
+            </div>
+        </a>
+        <a href="{{ url_for('holiday_controller.index') }}" class="quick-action">
+            <div class="icon" style="background: var(--success-light);">📅</div>
+            <div>
+                <div class="label">Tanggal Merah</div>
+                <div class="desc">Kelola hari libur</div>
+            </div>
+        </a>
     </div>
 </div>
 {% endblock %}

@@ -116,7 +116,10 @@ def index():
     jabatan_list = db.session.query(Employee.jabatan).distinct().all()
     jabatan_list = [j[0] for j in jabatan_list if j[0]]
     
-    return render_template('admin/manage_employees.html', employees=employees, divisi_list=divisi_list, jabatan_list=jabatan_list)
+    # Ambil user yang belum terhubung ke karyawan manapun
+    unassigned_users = User.query.filter(~User.employee.has()).all()
+    
+    return render_template('admin/manage_employees.html', employees=employees, divisi_list=divisi_list, jabatan_list=jabatan_list, unassigned_users=unassigned_users)
 
 @login_required
 @role_required('ADMIN', 'SUPERADMIN')
@@ -127,7 +130,7 @@ def create():
         
         if User.query.filter_by(email=email).first():
             flash('Email sudah terdaftar.', 'danger')
-            return redirect(url_for('employee_controller.create'))
+            return redirect(url_for('employee_controller.index'))
             
         tgl_lahir_str = request.form.get('tanggal_lahir')
         tgl_mulai_str = request.form.get('tanggal_mulai_bekerja')

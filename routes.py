@@ -32,4 +32,14 @@ def register_routes(app):
     app.add_url_rule('/users/edit/<int:user_id>', endpoint='user_controller.edit', view_func=user_controller.edit, methods=['GET', 'POST'])
     app.add_url_rule('/users/delete/<int:user_id>', endpoint='user_controller.delete', view_func=user_controller.delete, methods=['POST'])
 
+    # Reminder Routes
+    from app.controllers import reminder_controller
+    app.add_url_rule('/admin/reminders', endpoint='admin.manage_reminders', view_func=reminder_controller.list_reminders)
+    app.add_url_rule('/admin/reminders/add', endpoint='admin.add_reminder', view_func=reminder_controller.add_reminder, methods=['GET', 'POST'])
+    app.add_url_rule('/admin/reminders/edit/<int:id>', endpoint='admin.edit_reminder', view_func=reminder_controller.edit_reminder, methods=['GET', 'POST'])
+    app.add_url_rule('/admin/reminders/delete/<int:id>', endpoint='admin.delete_reminder', view_func=reminder_controller.delete_reminder, methods=['POST'])
+    app.add_url_rule('/admin/reminders/trigger', endpoint='admin.trigger_reminder', view_func=reminder_controller.trigger_reminder_test, methods=['POST'])
+    app.add_url_rule('/admin/reminders/schedule', endpoint='admin.update_schedule', view_func=reminder_controller.update_schedule, methods=['POST'])
+    app.add_url_rule('/admin/reminders/schedule_test', endpoint='admin.schedule_test', view_func=reminder_controller.schedule_test, methods=['POST'])
+
     app.register_blueprint(holiday_controller.bp)

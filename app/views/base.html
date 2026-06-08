@@ -3,485 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Leave Management App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-gradient-start: #e0e7ff;
-            --bg-gradient-end: #f3f4f6;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(255, 255, 255, 0.5);
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            --backdrop-blur: blur(16px);
-        }
-
-        body.dark-mode {
-            --bg-gradient-start: #0f172a;
-            --bg-gradient-end: #1e293b;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --card-border: rgba(255, 255, 255, 0.05);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            background-attachment: fixed;
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            transition: background 0.5s ease, color 0.5s ease;
-        }
-
-        .navbar {
-            background: var(--card-bg);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border-bottom: 1px solid var(--card-border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-sm);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            transition: all 0.3s ease;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, var(--primary), #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: opacity 0.3s ease;
-        }
-        
-        .navbar-brand:hover {
-            opacity: 0.8;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-        
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-            height: 100%;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: var(--card-bg);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            min-width: 180px;
-            box-shadow: var(--shadow-md);
-            z-index: 1000;
-            border-radius: 0.5rem;
-            border: 1px solid var(--card-border);
-            overflow: hidden;
-            top: 100%;
-            right: 0;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .dropdown-content a {
-            color: var(--text-main);
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease;
-        }
-        
-        .dropdown-content a::after {
-            display: none; /* Hilangin garis bawah kuning di dropdown */
-        }
-
-        .dropdown-content a:hover {
-            background-color: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-        }
-        
-        .nav-links span {
-            font-weight: 500;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: color 0.3s ease;
-        }
-        
-        .nav-links span:hover {
-            color: var(--primary);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2.5rem auto;
-            padding: 0 1.5rem;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--card-border);
-            margin-bottom: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        h1, h2, h3, h4 {
-            margin-top: 0;
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.23);
-            transform: translateY(-1px);
-        }
-        
-        .btn-success { background-color: var(--success); color: white; }
-        .btn-danger { background-color: var(--danger); color: white; }
-        .btn-warning { background-color: var(--warning); color: white; }
-        .btn-outline { 
-            background-color: transparent; 
-            border: 1px solid var(--text-muted); 
-            color: var(--text-main); 
-        }
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background-color: rgba(99, 102, 241, 0.05);
-        }
-        .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.875rem; }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background-color: rgba(255, 255, 255, 0.5);
-            color: var(--text-main);
-            box-sizing: border-box;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-        
-        body.dark-mode .form-control {
-            background-color: rgba(15, 23, 42, 0.5);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            background-color: var(--card-bg);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 1rem;
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-        }
-        
-        tr {
-            transition: background-color 0.2s;
-        }
-        
-        tbody tr:hover {
-            background-color: rgba(99, 102, 241, 0.03);
-        }
-
-        .alert {
-            padding: 1rem 1.25rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            animation: slideDown 0.3s ease-out;
-            backdrop-filter: blur(8px);
-        }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .alert-success { background-color: rgba(16, 185, 129, 0.15); color: #065f46; border-left: 4px solid var(--success); }
-        .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #991b1b; border-left: 4px solid var(--danger); }
-        .alert-info { background-color: rgba(59, 130, 246, 0.15); color: #1e40af; border-left: 4px solid var(--info); }
-        .alert-warning { background-color: rgba(245, 158, 11, 0.15); color: #92400e; border-left: 4px solid var(--warning); }
-        
-        body.dark-mode .alert-success { color: #34d399; }
-        body.dark-mode .alert-danger { color: #f87171; }
-        body.dark-mode .alert-info { color: #60a5fa; }
-        body.dark-mode .alert-warning { color: #fbbf24; }
-        
-        .badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.025em;
-        }
-        .badge-pending { background-color: rgba(245, 158, 11, 0.2); color: #d97706; }
-        .badge-approved { background-color: rgba(16, 185, 129, 0.2); color: #059669; }
-        .badge-rejected { background-color: rgba(239, 68, 68, 0.2); color: #dc2626; }
-        
-        body.dark-mode .badge-pending { color: #fbbf24; }
-        body.dark-mode .badge-approved { color: #34d399; }
-        body.dark-mode .badge-rejected { color: #f87171; }
-        
-        .grid { display: grid; gap: 1.5rem; }
-        .grid-cols-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-        
-        /* Utility */
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .items-center { align-items: center; }
-        .gap-2 { gap: 0.75rem; }
-        .mt-4 { margin-top: 1.5rem; }
-        .mb-4 { margin-bottom: 1.5rem; }
-        .text-muted { color: var(--text-muted); }
-        
-        /* Custom Datatables Dark Mode overrides */
-        body.dark-mode .dataTable-wrapper { color: var(--text-main); }
-        body.dark-mode .dataTable-selector, body.dark-mode .dataTable-input { 
-            background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--card-border); 
-        }
-        body.dark-mode .dataTable-pagination a {
-            color: var(--text-main);
-        }
-        body.dark-mode .dataTable-pagination a:hover {
-            background-color: var(--card-border);
-        }
-        body.dark-mode .dataTable-pagination .active a {
-            background-color: var(--primary);
-            color: white;
-        }
-        .dataTable-wrapper .dataTable-container {
-            overflow-x: auto;
-        }
-
-        /* Custom Details/Summary */
-        details.details-custom > summary {
-            list-style: none;
-        }
-        details.details-custom > summary::-webkit-details-marker {
-            display: none;
-        }
-        details.details-custom > summary .icon-chevron {
-            display: inline-block;
-            transition: transform 0.3s ease;
-        }
-        details[open].details-custom > summary .icon-chevron {
-            transform: rotate(180deg);
-        }
-    </style>
+    <title>{% block title %}Arunika{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.2">
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">HR App</a>
-        <div class="nav-links">
+    {% if session.get('user_id') %}
+    <div class="app-layout">
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-            {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard_controller.index') }}">Dashboard</a>
-                
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+                <span class="sidebar-brand-text">Arunika</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Menu Utama</div>
+                <a href="{{ url_for('dashboard_controller.index') }}" class="sidebar-link {% if request.endpoint == 'dashboard_controller.index' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-house"></i></span> Dashboard
+                </a>
+
                 {% if session.get('role') in ['ADMIN', 'SUPERADMIN'] %}
-                    <div class="dropdown">
-                        <span>Data Master ▾</span>
-                        <div class="dropdown-content">
-                            <a href="{{ url_for('employee_controller.index') }}">Data Karyawan</a>
-                            {% if session.get('role') == 'SUPERADMIN' %}
-                            <a href="{{ url_for('user_controller.index') }}">Data User</a>
-                            {% endif %}
-                            <a href="{{ url_for('holiday_controller.index') }}">Tanggal Merah</a>
-                            <a href="{{ url_for('leave_controller.manage_leaves') }}">Kelola Cuti</a>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="dropdown">
-                        <span>Menu Cuti ▾</span>
-                        <div class="dropdown-content">
-                            <a href="{{ url_for('leave_controller.request_leave') }}">Ajukan Cuti</a>
-                            <a href="{{ url_for('leave_controller.history') }}">Riwayat Cuti</a>
-                        </div>
-                    </div>
+                <div class="sidebar-section-title">Data Master</div>
+
+                <a href="{{ url_for('employee_controller.index') }}" class="sidebar-link {% if 'employee' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-users"></i></span> Data Karyawan
+                </a>
+
+                {% if session.get('role') == 'SUPERADMIN' %}
+                <a href="{{ url_for('user_controller.index') }}" class="sidebar-link {% if 'user_controller' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-key"></i></span> Data User
+                </a>
                 {% endif %}
-                
-                <button onclick="toggleDarkMode()" class="btn btn-outline btn-sm" style="border:none; font-size:1.2rem; padding: 0.2rem;" title="Toggle Dark Mode">🌓</button>
-                <div class="dropdown">
-                    <span style="font-weight:600; color:var(--primary);">Profile ▾</span>
-                    <div class="dropdown-content">
-                        <div style="padding: 12px 16px; border-bottom: 1px solid rgba(148, 163, 184, 0.2); font-weight: 600; color: var(--text-main);">
-                            {{ session.get('nama') }}
-                        </div>
-                        <a href="{{ url_for('auth_controller.change_password') }}">Change Password</a>
-                        <a href="{{ url_for('auth_controller.logout') }}" style="color: var(--danger); border-top: 1px solid rgba(148, 163, 184, 0.2);">Logout</a>
+
+                <a href="{{ url_for('holiday_controller.index') }}" class="sidebar-link {% if 'holiday' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-calendar-days"></i></span> Tanggal Merah
+                </a>
+
+                <div class="sidebar-section-title">Kelola</div>
+
+                <a href="{{ url_for('leave_controller.manage_leaves') }}" class="sidebar-link {% if 'manage_leaves' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-envelope-open-text"></i></span> Kelola Cuti
+                </a>
+
+                {% if session.get('role') == 'SUPERADMIN' %}
+                <a href="{{ url_for('admin.manage_reminders') }}" class="sidebar-link {% if 'reminder' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-bell"></i></span> Kontak Reminder
+                </a>
+                {% endif %}
+
+                {% else %}
+                <!-- Employee Menu -->
+                <div class="sidebar-section-title">Menu Cuti</div>
+                <a href="{{ url_for('leave_controller.request_leave') }}" class="sidebar-link {% if 'request_leave' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Ajukan Cuti
+                </a>
+                <a href="{{ url_for('leave_controller.history') }}" class="sidebar-link {% if 'history' in request.endpoint|default('') %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span> Riwayat Cuti
+                </a>
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">
+                        {{ session.get('nama', 'U')[0] | upper }}
+                    </div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">{{ session.get('nama', 'User') }}</div>
+                        <div class="sidebar-user-role">{{ session.get('role', '') }}</div>
                     </div>
                 </div>
-            {% else %}
-                <a href="{{ url_for('auth_controller.login') }}">Login</a>
-            {% endif %}
-        </div>
-    </nav>
+                <div class="sidebar-footer-actions">
+                    <button class="sidebar-footer-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                        <i class="fa-solid fa-moon"></i> Tema
+                    </button>
+                    <a href="{{ url_for('auth_controller.change_password') }}" class="sidebar-footer-btn">
+                        <i class="fa-solid fa-gear"></i> Sandi
+                    </a>
+                    <a href="{{ url_for('auth_controller.logout') }}" class="sidebar-footer-btn btn-logout">
+                        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                    </a>
+                </div>
+            </div>
+        </aside>
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                    <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+                </div>
+                <div class="topbar-breadcrumb">
+                    {% block breadcrumb %}{% endblock %}
+                </div>
+            </header>
 
-        {% block content %}{% endblock %}
+            <div class="content-area">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
+    {% else %}
+    <!-- No sidebar for login/auth pages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="position:fixed; top:1rem; right:1rem; z-index:9999; max-width:400px;">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block auth_content %}{% endblock %}
+    {% endif %}
 
     <script>
+        // Dark mode
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         }
-
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
+
+        // Sidebar toggle (mobile)
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
     </script>
-    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.2.0/turbolinks.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('turbolinks:load', () => {
             const tables = document.querySelectorAll('.table');
             tables.forEach(table => {
                 new simpleDatatables.DataTable(table, {
@@ -499,5 +171,6 @@
             });
         });
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,35 +1,38 @@
 {% extends 'base.html' %}
 
+{% block page_title %}Data Karyawan{% endblock %}
+{% block breadcrumb %}Data Master / Karyawan{% endblock %}
+
 {% block content %}
 <div class="flex justify-between items-center mb-4">
-    <h2>Data Karyawan</h2>
+    <h2 style="margin:0; font-size:1.25rem;">Data Karyawan</h2>
     <div class="flex gap-2">
-        <a href="{{ url_for('employee_controller.create') }}" class="btn btn-primary">Tambah Karyawan</a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('create-modal').style.display='flex'"><i class="fa-solid fa-plus"></i> Tambah Karyawan</button>
     </div>
 </div>
 
-<details class="card mb-4 details-custom" style="padding: 0; background-color: var(--bg-color);">
-    <summary style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 1.1rem; font-weight: 600;">
-        <span>Import Data Excel</span>
+<details class="card mb-4 details-custom" style="padding: 0;">
+    <summary style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 0.9375rem; font-weight: 600;">
+        <span><i class="fa-solid fa-file-excel"></i> Import Data Excel</span>
         <span class="icon-chevron">▼</span>
     </summary>
-    <div style="padding: 0 1.5rem 1.5rem 1.5rem; cursor: default;">
-        <form method="POST" action="{{ url_for('employee_controller.import_excel') }}" enctype="multipart/form-data" class="flex gap-2 items-center">
-            <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required style="width: auto;">
-            <button type="submit" class="btn btn-success">Import</button>
+    <div style="padding: 0 1rem 1rem 1rem; cursor: default;">
+        <form method="POST" action="{{ url_for('employee_controller.import_excel') }}" enctype="multipart/form-data" class="flex gap-3 items-center">
+            <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required>
+            <button type="submit" class="btn btn-success btn-sm">Import</button>
         </form>
-        <small class="text-muted" style="display: block; margin-top: 0.5rem;">Pastikan format kolom sesuai dengan template Excel yang disepakati.</small>
+        <small class="text-muted d-block mt-2">Pastikan format kolom sesuai dengan template Excel yang disepakati.</small>
     </div>
 </details>
 
 <details class="card mb-4 details-custom" style="padding: 0;">
-    <summary style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 1.1rem; font-weight: 600;">
-        <span>Filter & Export Data</span>
+    <summary style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; outline: none; font-size: 0.9375rem; font-weight: 600;">
+        <span><i class="fa-solid fa-filter"></i> Filter & Export Data</span>
         <span class="icon-chevron">▼</span>
     </summary>
-    <div style="padding: 0 1.5rem 1.5rem 1.5rem; cursor: default;">
+    <div style="padding: 0 1rem 1rem 1rem; cursor: default;">
         <form method="GET" action="{{ url_for('employee_controller.index') }}" id="filterForm">
-            <div class="grid grid-cols-4 mb-4 gap-4">
+            <div class="grid grid-cols-4 mb-4" style="gap:1rem;">
                 <div class="form-group">
                     <label class="form-label">Role</label>
                     <select name="role" class="form-control">
@@ -113,9 +116,9 @@
                 </div>
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="btn btn-primary">Filter Data</button>
-                <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline">Reset</a>
-                <button type="button" class="btn btn-success" onclick="exportData()">Export Excel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Filter Data</button>
+                <a href="{{ url_for('employee_controller.index') }}" class="btn btn-outline btn-sm">Reset</a>
+                <button type="button" class="btn btn-success btn-sm" onclick="exportData()">Export Excel</button>
             </div>
         </form>
         
@@ -131,8 +134,8 @@
     </div>
 </details>
 
-<div class="card">
-    <div style="overflow-x: auto;">
+<div class="card" style="padding:0;">
+    <div class="overflow-auto" style="padding:0.75rem;">
         <table class="table">
             <thead>
                 <tr>
@@ -150,50 +153,45 @@
             <tbody>
                 {% for emp in employees %}
                 <tr>
-                    <td><strong>{{ emp.nama }}</strong></td>
-                    <td>{{ emp.user.email if emp.user else '-' }}</td>
-                    <td>
+                    <td data-label="Nama"><strong>{{ emp.nama }}</strong></td>
+                    <td data-label="Email" class="text-sm">{{ emp.user.email if emp.user else '-' }}</td>
+                    <td data-label="Role / Status">
                         {% if emp.user %}
                             <span class="badge badge-pending">{{ emp.user.role }}</span><br>
                             {% if emp.user.is_active %}
-                                <span class="badge badge-approved" style="margin-top:4px; display:inline-block;">Aktif</span>
+                                <span class="badge badge-approved" style="margin-top:4px;">Aktif</span>
                             {% else %}
-                                <span class="badge badge-rejected" style="margin-top:4px; display:inline-block;">Nonaktif</span>
+                                <span class="badge badge-rejected" style="margin-top:4px;">Nonaktif</span>
                             {% endif %}
-                        {% else %}
-                            -
-                        {% endif %}
+                        {% else %}-{% endif %}
                     </td>
-                    <td>{{ emp.divisi if emp.divisi else '-' }}</td>
-                    <td>
-                        {{ emp.jabatan if emp.jabatan else '-' }} <br><small class="text-muted">{{ emp.jabatan_2 if emp.jabatan_2 else '' }}</small>
+                    <td data-label="Divisi">{{ emp.divisi if emp.divisi else '-' }}</td>
+                    <td data-label="Jabatan">
+                        {{ emp.jabatan if emp.jabatan else '-' }}
+                        {% if emp.jabatan_2 %}<br><small class="text-muted">{{ emp.jabatan_2 }}</small>{% endif %}
                     </td>
-                    <td>
+                    <td data-label="Tanggal Masuk">
+                        {% if emp.tanggal_mulai_bekerja %}{{ emp.tanggal_mulai_bekerja.strftime('%d-%m-%Y') }}{% else %}-{% endif %}
+                    </td>
+                    <td data-label="Masa Kerja">
                         {% if emp.tanggal_mulai_bekerja %}
-                            {{ emp.tanggal_mulai_bekerja.strftime('%d-%m-%Y') }}
-                        {% else %}
-                            -
-                        {% endif %}
+                            <span class="badge" style="background: var(--primary-light); color: var(--primary);">{{ emp.get_masa_kerja() }}</span>
+                        {% else %}-{% endif %}
                     </td>
-                    <td>
-                        {% if emp.tanggal_mulai_bekerja %}
-                            <span class="badge badge-pending" style="background-color: var(--card-bg); border: 1px solid var(--primary); color: var(--text-main);">{{ emp.get_masa_kerja() }}</span>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        {{ emp.get_total_sisa_cuti() }} / {{ emp.hak_cuti_tahunan + emp.sisa_cuti_tambahan }}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('detail-modal-{{emp.id}}').style.display='flex'">Detail</button>
-                        <a href="{{ url_for('employee_controller.edit', employee_id=emp.id) }}" class="btn btn-outline btn-sm">Edit</a>
+                    <td data-label="Hak Cuti">{{ emp.get_total_sisa_cuti() }} / {{ emp.hak_cuti_tahunan + emp.sisa_cuti_tambahan }}</td>
+                    <td data-label="Aksi">
+                        <!-- Desktop Actions -->
+                        <div class="d-desktop-flex gap-1 flex-wrap" style="align-items: center;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('detail-modal-{{emp.id}}').style.display='flex'">Detail</button>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('edit-modal-{{emp.id}}').style.display='flex'">Edit</button>
+                            <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='flex'"><i class="fa-solid fa-plus"></i> Cuti</button>
+                            <form method="POST" action="{{ url_for('employee_controller.delete', employee_id=emp.id) }}" style="display:inline; margin:0;" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                            </form>
+                        </div>
                         
-                        <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='flex'">+ Cuti</button>
-
-                        <form method="POST" action="{{ url_for('employee_controller.delete', employee_id=emp.id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus karyawan ini? Akun login tidak akan ikut terhapus.');">
-                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                        </form>
+                        <!-- Mobile Actions -->
+                        <button type="button" class="btn btn-outline w-100 d-mobile-flex justify-center" style="margin-top: 0.5rem;" onclick="document.getElementById('action-modal-{{emp.id}}').style.display='flex'"><i class="fa-solid fa-gear"></i> Aksi ▼</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -202,12 +200,28 @@
     </div>
 </div>
 
-<!-- Modals diletakkan di luar table untuk menghindari isu z-index/transform -->
+<!-- Modals -->
 {% for emp in employees %}
-<div id="adjust-modal-{{emp.id}}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div class="card" style="width:400px; text-align: left; margin:0; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <h3>Tambah Cuti Kompensasi</h3>
-        <p>Untuk: <strong>{{ emp.nama }}</strong></p>
+<div id="action-modal-{{emp.id}}" class="modal-overlay" style="display:none; z-index: 2000;">
+    <div class="card" style="width: 320px; margin: auto;">
+        <h3 style="font-size:1.1rem; margin-bottom:0.5rem; text-align: center;">Pilih Aksi</h3>
+        <p class="text-sm text-center text-muted mb-4"><strong>{{ emp.nama }}</strong></p>
+        <div class="grid grid-cols-1" style="gap: 0.5rem;">
+            <button type="button" class="btn btn-primary w-100 justify-center" onclick="document.getElementById('action-modal-{{emp.id}}').style.display='none'; document.getElementById('detail-modal-{{emp.id}}').style.display='flex'"><i class="fa-solid fa-circle-info"></i> Detail</button>
+            <button type="button" class="btn btn-outline w-100 justify-center" onclick="document.getElementById('action-modal-{{emp.id}}').style.display='none'; document.getElementById('edit-modal-{{emp.id}}').style.display='flex'"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+            <button type="button" class="btn btn-info w-100 justify-center" onclick="document.getElementById('action-modal-{{emp.id}}').style.display='none'; document.getElementById('adjust-modal-{{emp.id}}').style.display='flex'"><i class="fa-solid fa-plus"></i> Tambah Cuti Kompensasi</button>
+            <form method="POST" action="{{ url_for('employee_controller.delete', employee_id=emp.id) }}" style="width: 100%; margin:0;" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
+                <button type="submit" class="btn btn-danger w-100 justify-center" style="width: 100%;"><i class="fa-solid fa-trash-can"></i> Hapus Karyawan</button>
+            </form>
+            <button type="button" class="btn btn-outline w-100 justify-center mt-2" onclick="document.getElementById('action-modal-{{emp.id}}').style.display='none'">Batal</button>
+        </div>
+    </div>
+</div>
+
+<div id="adjust-modal-{{emp.id}}" class="modal-overlay" style="display:none; z-index: 2100;">
+    <div class="card" style="width:400px; margin:auto;">
+        <h3 style="font-size:1rem; margin-bottom:0.5rem;">Tambah Cuti Kompensasi</h3>
+        <p class="text-sm text-muted">Untuk: <strong>{{ emp.nama }}</strong></p>
         <form method="POST" action="{{ url_for('leave_controller.adjust_leave', employee_id=emp.id) }}">
             <div class="form-group">
                 <label class="form-label">Jumlah Hari</label>
@@ -215,78 +229,67 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Alasan Kompensasi</label>
-                <textarea name="alasan" class="form-control" rows="3" required placeholder="Wajib diisi, misal: Masuk saat libur nasional..."></textarea>
+                <textarea name="alasan" class="form-control" rows="3" required placeholder="Wajib diisi..."></textarea>
             </div>
-            <div class="flex gap-2" style="margin-top: 1rem;">
-                <button type="submit" class="btn btn-success">Simpan Cuti</button>
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='none'">Batal</button>
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success btn-sm">Simpan</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('adjust-modal-{{emp.id}}').style.display='none'">Batal</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal Detail Karyawan -->
-<div id="detail-modal-{{emp.id}}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div class="card" style="width:700px; text-align: left; margin:0; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+<div id="detail-modal-{{emp.id}}" class="modal-overlay" style="display:none;">
+    <div class="card" style="width:700px; margin:0;">
         <div class="flex justify-between items-center mb-4">
-            <h3 style="margin: 0;">Detail Karyawan: {{ emp.nama }}</h3>
+            <h3 style="margin: 0; font-size:1rem;">Detail: {{ emp.nama }}</h3>
             <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('detail-modal-{{emp.id}}').style.display='none'">Tutup</button>
         </div>
         
-        <div class="grid grid-cols-2" style="gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="grid grid-cols-2" style="gap: 1rem; margin-bottom: 1.25rem;">
             <div>
-                <p class="text-muted" style="margin:0; font-size:0.875rem;">Divisi</p>
-                <strong>{{ emp.divisi or '-' }}</strong>
+                <p class="text-muted text-xs" style="margin:0;">Divisi</p>
+                <strong class="text-sm">{{ emp.divisi or '-' }}</strong>
             </div>
             <div>
-                <p class="text-muted" style="margin:0; font-size:0.875rem;">Jabatan</p>
-                <strong>{{ emp.jabatan or '-' }}</strong>
+                <p class="text-muted text-xs" style="margin:0;">Jabatan</p>
+                <strong class="text-sm">{{ emp.jabatan or '-' }}</strong>
             </div>
             <div>
-                <p class="text-muted" style="margin:0; font-size:0.875rem;">Sisa Cuti</p>
-                <strong>{{ emp.get_total_sisa_cuti() }} Hari (Termasuk Kompensasi: {{ emp.sisa_cuti_tambahan }} Hari)</strong>
+                <p class="text-muted text-xs" style="margin:0;">Sisa Cuti</p>
+                <strong class="text-sm">{{ emp.get_total_sisa_cuti() }} Hari (Kompensasi: {{ emp.sisa_cuti_tambahan }})</strong>
             </div>
             <div>
-                <p class="text-muted" style="margin:0; font-size:0.875rem;">Status Akun</p>
-                <strong>{% if emp.user %}Aktif ({{ emp.user.email }}){% else %}Tanpa Akun{% endif %}</strong>
+                <p class="text-muted text-xs" style="margin:0;">Status Akun</p>
+                <strong class="text-sm">{% if emp.user %}Aktif ({{ emp.user.email }}){% else %}Tanpa Akun{% endif %}</strong>
             </div>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-            <p class="text-muted" style="margin:0 0 0.25rem 0; font-size:0.875rem;">Hak Libur Nasional (Syarat: 3 Tahun Masa Kerja)</p>
+        <div class="mb-4">
+            <p class="text-muted text-xs" style="margin:0 0 0.25rem 0;">Hak Libur Nasional (Syarat: 3 Tahun)</p>
             {% if emp.is_senior_eligible() %}
-                <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.3rem 0.6rem; background-color: var(--success); color: white; border-radius: 4px;">✅ Eligible Libur Nasional</span>
+                <span class="badge badge-approved" style="font-size: 0.75rem;"><i class="fa-solid fa-check"></i> Eligible</span>
             {% else %}
-                <span class="badge badge-warning" style="font-size: 0.85rem; padding: 0.3rem 0.6rem; background-color: var(--warning); color: white; border-radius: 4px;">⏳ Belum Eligible Libur Nasional</span>
+                <span class="badge badge-pending" style="font-size: 0.75rem;"><i class="fa-regular fa-clock"></i> Belum Eligible</span>
             {% endif %}
         </div>
 
-        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+        <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--card-border);">
 
-        <h4>Riwayat Pengajuan Cuti</h4>
+        <h4 style="font-size:0.875rem; margin-bottom:0.5rem;">Riwayat Pengajuan Cuti</h4>
         {% if emp.leave_requests %}
-        <div style="max-height: 200px; overflow-y: auto; margin-bottom: 1.5rem;">
-            <table style="width: 100%; margin: 0; font-size: 0.9rem;">
-                <thead>
-                    <tr>
-                        <th style="padding: 0.5rem;">Tanggal</th>
-                        <th style="padding: 0.5rem;">Jml Hari</th>
-                        <th style="padding: 0.5rem;">Status</th>
-                    </tr>
-                </thead>
+        <div style="max-height: 180px; overflow-y: auto; margin-bottom: 1rem;">
+            <table class="table-simple" style="width: 100%; font-size: 0.8rem;">
+                <thead><tr><th style="padding:0.4rem;">Tanggal</th><th style="padding:0.4rem;">Hari</th><th style="padding:0.4rem;">Status</th></tr></thead>
                 <tbody>
                     {% for req in emp.leave_requests|sort(attribute='created_at', reverse=true) %}
                     <tr>
-                        <td style="padding: 0.5rem;">{{ req.tanggal_mulai.strftime('%d-%m-%Y') }} s/d {{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
-                        <td style="padding: 0.5rem;">{{ req.jumlah_hari }}</td>
-                        <td style="padding: 0.5rem;">
-                            {% if req.status == 'APPROVED' %}
-                                <span class="badge badge-approved" style="font-size: 0.75rem;">Disetujui</span>
-                            {% elif req.status == 'REJECTED' %}
-                                <span class="badge badge-rejected" style="font-size: 0.75rem;">Ditolak</span>
-                            {% else %}
-                                <span class="badge badge-pending" style="font-size: 0.75rem;">Menunggu</span>
-                            {% endif %}
+                        <td style="padding:0.4rem;">{{ req.tanggal_mulai.strftime('%d-%m-%Y') }} s/d {{ req.tanggal_selesai.strftime('%d-%m-%Y') }}</td>
+                        <td style="padding:0.4rem;">{{ req.jumlah_hari }}</td>
+                        <td style="padding:0.4rem;">
+                            {% if req.status == 'APPROVED' %}<span class="badge badge-approved">Disetujui</span>
+                            {% elif req.status == 'REJECTED' %}<span class="badge badge-rejected">Ditolak</span>
+                            {% else %}<span class="badge badge-pending">Menunggu</span>{% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -294,36 +297,130 @@
             </table>
         </div>
         {% else %}
-        <p class="text-muted" style="margin-bottom: 1.5rem;">Belum ada riwayat pengajuan cuti.</p>
+        <p class="text-muted text-sm mb-4">Belum ada riwayat.</p>
         {% endif %}
 
-        <h4>Riwayat Cuti Kompensasi (Tambahan)</h4>
+        <h4 style="font-size:0.875rem; margin-bottom:0.5rem;">Riwayat Cuti Kompensasi</h4>
         {% if emp.compensation_histories %}
-        <div style="max-height: 200px; overflow-y: auto;">
-            <table style="width: 100%; margin: 0; font-size: 0.9rem;">
-                <thead>
-                    <tr>
-                        <th style="padding: 0.5rem;">Tanggal</th>
-                        <th style="padding: 0.5rem;">Hari</th>
-                        <th style="padding: 0.5rem;">Alasan</th>
-                    </tr>
-                </thead>
+        <div style="max-height: 180px; overflow-y: auto;">
+            <table class="table-simple" style="width: 100%; font-size: 0.8rem;">
+                <thead><tr><th style="padding:0.4rem;">Tanggal</th><th style="padding:0.4rem;">Hari</th><th style="padding:0.4rem;">Alasan</th></tr></thead>
                 <tbody>
                     {% for hist in emp.compensation_histories|sort(attribute='created_at', reverse=true) %}
                     <tr>
-                        <td style="padding: 0.5rem;">{{ hist.created_at.strftime('%d-%m-%Y') }}</td>
-                        <td style="padding: 0.5rem; color: var(--success); font-weight: bold;">+{{ hist.jumlah_hari }}</td>
-                        <td style="padding: 0.5rem;">{{ hist.alasan }}</td>
+                        <td style="padding:0.4rem;">{{ hist.created_at.strftime('%d-%m-%Y') }}</td>
+                        <td style="padding:0.4rem; color: var(--success); font-weight: bold;">+{{ hist.jumlah_hari }}</td>
+                        <td style="padding:0.4rem;">{{ hist.alasan }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% else %}
-        <p class="text-muted">Belum ada riwayat penambahan cuti kompensasi.</p>
+        <p class="text-muted text-sm">Belum ada riwayat kompensasi.</p>
         {% endif %}
     </div>
 </div>
 
+<!-- Edit Modal -->
+<div id="edit-modal-{{emp.id}}" class="modal-overlay" style="display:none; z-index: 2100;">
+    <div class="card" style="width: 800px; max-width: 95%; margin: auto; max-height: 90vh; overflow-y: auto;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="font-size:1.25rem; margin:0;">Edit Data Karyawan</h3>
+            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('edit-modal-{{emp.id}}').style.display='none'">Tutup</button>
+        </div>
+        <form method="POST" action="{{ url_for('employee_controller.edit', employee_id=emp.id) }}">
+            <div class="grid grid-cols-2" style="gap: 1rem;">
+                <div class="form-group col-span-2">
+                    <label class="form-label">Akun Login (Opsional)</label>
+                    <select name="user_id" class="form-control">
+                        <option value="">-- Karyawan Tanpa Akun Login --</option>
+                        {% for u in unassigned_users %}
+                            <option value="{{ u.id }}">{{ u.email }} ({{ u.role }})</option>
+                        {% endfor %}
+                        {% if emp.user %}
+                            <option value="{{ emp.user.id }}" selected>{{ emp.user.email }} ({{ emp.user.role }})</option>
+                        {% endif %}
+                    </select>
+                    <small class="text-muted">Pilih akun jika karyawan ini butuh akses ke sistem.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" name="nama" class="form-control" value="{{ emp.nama }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Divisi</label>
+                    <input type="text" name="divisi" class="form-control" value="{{ emp.divisi or '' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jabatan</label>
+                    <input type="text" name="jabatan" class="form-control" value="{{ emp.jabatan or '' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jabatan 2</label>
+                    <input type="text" name="jabatan_2" class="form-control" value="{{ emp.jabatan_2 or '' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Lahir</label>
+                    <input type="date" name="tanggal_lahir" class="form-control" value="{{ emp.tanggal_lahir.strftime('%Y-%m-%d') if emp.tanggal_lahir else '' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Mulai Bekerja</label>
+                    <input type="date" name="tanggal_mulai_bekerja" class="form-control" value="{{ emp.tanggal_mulai_bekerja.strftime('%Y-%m-%d') if emp.tanggal_mulai_bekerja else '' }}">
+                </div>
+            </div>
+            <div class="flex gap-2" style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">Update Data</button>
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('edit-modal-{{emp.id}}').style.display='none'">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endfor %}
+
+<!-- Create Modal -->
+<div id="create-modal" class="modal-overlay" style="display:none; z-index: 2100;">
+    <div class="card" style="width: 800px; max-width: 95%; margin: auto; max-height: 90vh; overflow-y: auto;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="font-size:1.25rem; margin:0;">Tambah Karyawan Baru</h3>
+            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('create-modal').style.display='none'">Tutup</button>
+        </div>
+        <form method="POST" action="{{ url_for('employee_controller.create') }}">
+            <div class="grid grid-cols-2" style="gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" name="nama" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email (Untuk Login)</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Divisi</label>
+                    <input type="text" name="divisi" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jabatan</label>
+                    <input type="text" name="jabatan" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jabatan 2</label>
+                    <input type="text" name="jabatan_2" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Lahir (Untuk Password Default)</label>
+                    <input type="date" name="tanggal_lahir" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Mulai Bekerja</label>
+                    <input type="date" name="tanggal_mulai_bekerja" class="form-control">
+                </div>
+            </div>
+            <div class="flex gap-2" style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">Simpan Karyawan</button>
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('create-modal').style.display='none'">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
