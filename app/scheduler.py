@@ -51,7 +51,7 @@ def check_and_send_reminders(app):
         today = datetime.now().date()
         _, _, max_text_limit = get_schedule_settings()
         
-        # 1. Reminder Ulang Tahun (H-1)
+        # 1. Reminder Ulang Tahun (H-1 / Besok)
         tomorrow = today + timedelta(days=1)
         birthday_emps = [
             e for e in Employee.query.all() 
@@ -61,9 +61,23 @@ def check_and_send_reminders(app):
         if birthday_emps:
             hrd_contacts = ReminderContact.query.filter_by(is_active=True, kategori='HRD').all()
             for emp in birthday_emps:
-                msg = f"Halo HRD!\n\nBesok ({tomorrow.strftime('%d %B')}) adalah ulang tahun *{emp.nama}* dari divisi {emp.divisi}. Jangan lupa beri ucapan ya! 🎉🎂"
+                jabatan_text = ""
+                if emp.jabatan_2 and emp.divisi:
+                    jabatan_text = f"{emp.jabatan_2} {emp.divisi}"
+                elif emp.jabatan_2:
+                    jabatan_text = emp.jabatan_2
+                elif emp.divisi:
+                    jabatan_text = emp.divisi
+                    
+                jabatan_display = f" ({jabatan_text})" if jabatan_text else ""
+                tgl_indo = f"{tomorrow.strftime('%d')} {get_indonesian_month(tomorrow.month)}"
+                
+                msg1 = f"Selamat pagi Boss, mau mengingatkan besok tgl {tgl_indo} ultah {emp.nama}{jabatan_display}"
+                msg2 = f"Selamat Ulang Tahun {emp.nama}{jabatan_display}\n\nTuhan memberkati {emp.nama} panjang umur, bahagia, sehat dan sukses selalu.. 👏🎂🙏"
+                
                 for contact in hrd_contacts:
-                    send_whatsapp_message(contact.nomor_telepon, msg)
+                    send_whatsapp_message(contact.nomor_telepon, msg1)
+                    send_whatsapp_message(contact.nomor_telepon, msg2)
                     
         # 2. Reminder Kontrak (H-30 dan H-7)
         expiring_h30 = []
@@ -86,7 +100,7 @@ def check_and_send_reminders(app):
             lines = []
             for i, emp in enumerate(emps, 1):
                 tgl_indo = f"{emp.tanggal_berakhir_kontrak.day} {get_indonesian_month(emp.tanggal_berakhir_kontrak.month)} {emp.tanggal_berakhir_kontrak.year}"
-                lines.append(f"{i}. {emp.nama} ({emp.divisi} - {emp.jabatan}) - Habis: {tgl_indo}")
+                lines.append(f"{i}. {emp.nama} ({emp.divisi} - {emp.jabatan_2}) - Habis: {tgl_indo}")
             return "\n".join(lines)
 
         # Proses H-30
@@ -106,7 +120,7 @@ def check_and_send_reminders(app):
                     data.append({
                         "Nama": emp.nama,
                         "Divisi": emp.divisi,
-                        "Jabatan": emp.jabatan,
+                        "Jabatan": emp.jabatan_2,
                         "Status": emp.status_karyawan,
                         "Tanggal Habis Kontrak": emp.tanggal_berakhir_kontrak.strftime('%Y-%m-%d')
                     })

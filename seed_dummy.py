@@ -10,8 +10,8 @@ app = create_app()
 
 first_names = ["Budi", "Andi", "Joko", "Siti", "Ayu", "Dewi", "Rina", "Dian", "Eko", "Hadi", "Agus", "Putra", "Rizky", "Bayu", "Fajar", "Hendra", "Nia", "Maya", "Dina", "Tari", "Kusuma", "Lestari", "Setiawan", "Wijaya", "Rani", "Rudi", "Candra", "Dede", "Gilang"]
 last_names = ["Santoso", "Pratama", "Saputra", "Wibowo", "Kurniawan", "Sari", "Purnama", "Hidayat", "Lubis", "Siregar", "Sihombing", "Sinaga", "Wahyuni", "Kusuma", "Lestari", "Nugroho", "Gunawan", "Wijaya", "Putri", "Mahendra"]
-divisi_list = ["IT", "HRD", "Marketing", "Sales", "Finance", "Operations", "Design", "Product", "Engineering", "Customer Service"]
-jabatan_list = ["Staff", "Supervisor", "Manager", "Senior Staff", "Lead", "Director", "Executive", "Analyst", "Coordinator"]
+divisi_list = ["SCT Pusat", "SCT Andaria Toys", "SCT Rumak", "SCT Praya", "Dragon Toys", "Kotamas", "SCT Pagesangan", "SCT Tanjung", "Dapur Sayur", "Gudang", "Head Office"]
+jabatan_list = divisi_list
 
 with app.app_context():
     print("Menghapus data karyawan lama...")
@@ -30,7 +30,9 @@ with app.app_context():
             nama += f" {random.choice(last_names)}"
             
         divisi = random.choice(divisi_list)
-        jabatan = random.choice(jabatan_list)
+        jabatan = divisi
+        posisi_list = ['Kasir', 'Pramuniaga', 'Admin Gudang', 'Kepala Toko', 'Driver', 'Security', 'Staff Packing', 'SPG', 'SPB', 'Helper']
+        jabatan_2 = random.choice(posisi_list)
         
         # Tanggal lahir: antara 22 dan 55 tahun lalu
         umur_hari = random.randint(22*365, 55*365)
@@ -66,6 +68,7 @@ with app.app_context():
             nama=nama,
             divisi=divisi,
             jabatan=jabatan,
+            jabatan_2=jabatan_2,
             tanggal_lahir=tgl_lahir,
             tanggal_mulai_bekerja=tgl_masuk,
             status_karyawan=status,

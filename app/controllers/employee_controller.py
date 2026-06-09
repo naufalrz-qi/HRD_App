@@ -108,13 +108,15 @@ def calculate_hak_cuti(tanggal_mulai, jabatan):
 def index():
     employees = _get_filtered_users(request)
     
-    # Ambil list divisi unik buat dropdown
-    divisi_list = db.session.query(Employee.divisi).distinct().all()
-    divisi_list = [d[0] for d in divisi_list if d[0]]
+    # Hardcoded divisi list sesuai permintaan
+    divisi_list = [
+        "SCT Pusat", "SCT Andaria Toys", "SCT Rumak", "SCT Praya", 
+        "Dragon Toys", "Kotamas", "SCT Pagesangan", "SCT Tanjung", 
+        "Dapur Sayur", "Gudang", "Head Office"
+    ]
     
-    # Ambil list jabatan unik buat dropdown
-    jabatan_list = db.session.query(Employee.jabatan).distinct().all()
-    jabatan_list = [j[0] for j in jabatan_list if j[0]]
+    # Jabatan1 disamakan dengan divisi
+    jabatan_list = divisi_list
     
     # Ambil user yang belum terhubung ke karyawan manapun
     unassigned_users = User.query.filter(~User.employee.has()).all()
