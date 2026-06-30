@@ -1,0 +1,111 @@
+// Prisma schema — dipetakan PERSIS ke skema tabel/kolom Flask lama (snake_case)
+// via @@map / @map. Skema yang ada TIDAK diubah; engine: Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Supabase: app pakai koneksi pooled (port 6543, pgbouncer); migrasi pakai direct (5432).
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                 Int     @id @default(autoincrement())
+  email              String  @unique @db.VarChar(120)
+  passwordHash       String  @map("password_hash") @db.VarChar(255)
+  role               String  @default("PEGAWAI") @db.VarChar(50) // SUPERADMIN, ADMIN, PEGAWAI
+  isActive           Boolean @default(true) @map("is_active")
+  mustChangePassword Boolean @default(false) @map("must_change_password")
+
+  employee     Employee?
+  requestsMade LeaveRequest[] @relation("Requester")
+
+  @@map("users")
+}
+
+model Employee {
+  id                     Int       @id @default(autoincrement())
+  userId                 Int?      @unique @map("user_id")
+  nama                   String    @db.VarChar(150)
+  divisi                 String?   @db.VarChar(100)
+  jabatan                String?   @db.VarChar(100)
+  jabatan2               String?   @map("jabatan_2") @db.VarChar(100)
+  tanggalLahir           DateTime? @map("tanggal_lahir") @db.Date
+  tanggalMulaiBekerja    DateTime? @map("tanggal_mulai_bekerja") @db.Date
+  statusKaryawan         String?   @default("Kontrak") @map("status_karyawan") @db.VarChar(50)
+  tanggalBerakhirKontrak DateTime? @map("tanggal_berakhir_kontrak") @db.Date
+  hakCutiTahunan         Int       @default(0) @map("hak_cuti_tahunan")
+  cutiTerpakai           Int       @default(0) @map("cuti_terpakai")
+  sisaCutiTambahan       Int       @default(0) @map("sisa_cuti_tambahan")
+
+  user                  User?                 @relation(fields: [userId], references: [id])
+  leaveRequests         LeaveRequest[]
+  compensationHistories CompensationHistory[]
+  reminderContacts      ReminderContact[]
+
+  @@map("employees")
+}
+
+model LeaveRequest {
+  id              Int      @id @default(autoincrement())
+  employeeId      Int      @map("employee_id")
+  requesterUserId Int      @map("requester_user_id")
+  tanggalMulai    DateTime @map("tanggal_mulai") @db.Date
+  tanggalSelesai  DateTime @map("tanggal_selesai") @db.Date
+  jumlahHari      Int      @map("jumlah_hari")
+  alasan          String
+  alasanTolak     String?  @map("alasan_tolak")
+  status          String   @default("PENDING") @db.VarChar(20) // PENDING, APPROVED, REJECTED
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  employee  Employee @relation(fields: [employeeId], references: [id])
+  requester User     @relation("Requester", fields: [requesterUserId], references: [id])
+
+  @@map("leave_requests")
+}
+
+model CompensationHistory {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @map("employee_id")
+  jumlahHari Int      @map("jumlah_hari")
+  alasan     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("compensation_histories")
+}
+
+model PublicHoliday {
+  id         Int      @id @default(autoincrement())
+  tanggal    DateTime @unique @db.Date
+  keterangan String   @db.VarChar(255)
+
+  @@map("public_holidays")
+}
+
+model ReminderContact {
+  id           Int     @id @default(autoincrement())
+  nama         String? @db.VarChar(150)
+  nomorTelepon String  @map("nomor_telepon") @db.VarChar(20)
+  kategori     String? @db.VarChar(50)
+  isActive     Boolean @default(true) @map("is_active")
+  employeeId   Int?    @map("employee_id")
+
+  employee Employee? @relation(fields: [employeeId], references: [id])
+
+  @@map("reminder_contacts")
+}
+
+// Tabel BARU (additive) — untuk konfigurasi scheduler (FS ephemeral di Vercel).
+// Tidak mengubah tabel lama.
+model AppSetting {
+  key   String @id
+  value String
+
+  @@map("app_settings")
+}
