@@ -17,7 +17,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-card border border-card-border bg-card/90 shadow-card backdrop-blur-sm transition duration-300 ${
+      className={`rounded-card border border-card-border bg-card shadow-card transition duration-300 ${
         hover ? "hover:-translate-y-0.5 hover:shadow-card-lg" : ""
       } ${noPadding ? "" : "p-5"} ${className}`}
     >

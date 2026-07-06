@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
@@ -9,7 +8,6 @@ import { useApp } from "@/lib/store";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
   const { loading, currentUser } = useApp();
 
   if (loading && !currentUser) {
@@ -26,9 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenu={() => setOpen(true)} />
         <main className="mx-auto w-full max-w-7xl flex-1 p-4 lg:p-6">
-          <div key={pathname} className="animate-in">
-            {children}
-          </div>
+          <div className="animate-in">{children}</div>
         </main>
       </div>
     </div>

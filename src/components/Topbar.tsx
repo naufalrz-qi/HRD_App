@@ -23,7 +23,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const displayName = currentEmployee?.nama ?? currentUser?.email ?? "";
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-card-border bg-card/80 px-4 py-3 backdrop-blur lg:px-6">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-card-border bg-card px-4 py-3 lg:px-6">
       <div className="flex items-center gap-3">
         <button onClick={onMenu} className="text-text-muted lg:hidden" aria-label="Menu">
           <Menu size={22} />
