@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireSession } from "@/lib/auth";
 import { serializeEmployee } from "@/lib/employee-logic";
-import { dateOnly } from "@/lib/serialize";
+import { dateOnly, serializeLeave } from "@/lib/serialize";
 import { calcJumlahHari, isSeniorEligible, parseDate } from "@/lib/helpers";
 
 export async function POST(req: Request) {
@@ -48,8 +48,8 @@ export async function POST(req: Request) {
       if (daysWorked < 90) throw new ApiError(400, "Karyawan belum memenuhi syarat masa kerja (minimal 3 bulan).");
     }
 
-    await prisma.$transaction(async (tx) => {
-      await tx.leaveRequest.create({
+    const { leave, employee } = await prisma.$transaction(async (tx) => {
+      const createdLeave = await tx.leaveRequest.create({
         data: {
           employeeId: emp.id,
           requesterUserId: session.userId,
@@ -60,13 +60,16 @@ export async function POST(req: Request) {
           status: isSuperadmin ? "APPROVED" : "PENDING",
         },
       });
-      if (isSuperadmin) {
-        await tx.employee.update({ where: { id: emp.id }, data: { cutiTerpakai: { increment: jumlahHari } } });
-      }
+      const updatedEmployee = isSuperadmin
+        ? await tx.employee.update({ where: { id: emp.id }, data: { cutiTerpakai: { increment: jumlahHari } } })
+        : null;
+      return { leave: createdLeave, employee: updatedEmployee };
     });
 
     return {
       ok: true,
+      leave: serializeLeave(leave),
+      employee: employee ? serializeEmployee(employee) : null,
       message: isSuperadmin
         ? "Cuti berhasil ditambahkan secara instan."
         : "Pengajuan cuti berhasil dikirim dan menunggu persetujuan.",

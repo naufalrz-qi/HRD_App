@@ -65,20 +65,24 @@ function Employees() {
 
   const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
-  const rows = employees.filter((e) => {
-    if (fDivisi && e.divisi !== fDivisi) return false;
-    if (fJabatan && e.jabatan !== fJabatan) return false;
-    if (fPunyaCuti === "1" && getTotalSisaCuti(e) <= 0) return false;
-    if (fPunyaCuti === "0" && getTotalSisaCuti(e) > 0) return false;
-    if (fMasaKerja) {
-      const y = getYearsWorked(e);
-      if (y === null) return false;
-      if (fMasaKerja === "<1" && y >= 1) return false;
-      if (fMasaKerja === "1-3" && (y < 1 || y > 3)) return false;
-      if (fMasaKerja === ">3" && y <= 3) return false;
-    }
-    return true;
-  });
+  const rows = useMemo(
+    () =>
+      employees.filter((e) => {
+        if (fDivisi && e.divisi !== fDivisi) return false;
+        if (fJabatan && e.jabatan !== fJabatan) return false;
+        if (fPunyaCuti === "1" && getTotalSisaCuti(e) <= 0) return false;
+        if (fPunyaCuti === "0" && getTotalSisaCuti(e) > 0) return false;
+        if (fMasaKerja) {
+          const y = getYearsWorked(e);
+          if (y === null) return false;
+          if (fMasaKerja === "<1" && y >= 1) return false;
+          if (fMasaKerja === "1-3" && (y < 1 || y > 3)) return false;
+          if (fMasaKerja === ">3" && y <= 3) return false;
+        }
+        return true;
+      }),
+    [employees, fDivisi, fJabatan, fPunyaCuti, fMasaKerja]
+  );
 
   const columns: Column<Employee>[] = [
     { key: "nama", header: "Nama", searchValue: (e) => e.nama, sortValue: (e) => e.nama, render: (e) => <span className="font-semibold">{e.nama}</span> },

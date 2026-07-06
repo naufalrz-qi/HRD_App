@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
+import { serializeEmployee } from "@/lib/employee-logic";
 import { dateOnly } from "@/lib/serialize";
 
 // Edit data karyawan.
@@ -10,7 +11,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
     const id = Number((await ctx.params).id);
     const b = await req.json();
 
-    await prisma.employee.update({
+    const updated = await prisma.employee.update({
       where: { id },
       data: {
         nama: b.nama,
@@ -22,7 +23,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
       },
     });
 
-    return { ok: true };
+    return { employee: serializeEmployee(updated) };
   });
 }
 
@@ -39,6 +40,6 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
       prisma.employee.delete({ where: { id } }),
     ]);
 
-    return { ok: true };
+    return { employeeId: id };
   });
 }

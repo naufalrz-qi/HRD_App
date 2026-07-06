@@ -19,7 +19,8 @@ export async function POST(req: Request) {
     if (!Number.isInteger(h) || h < 0 || h > 23 || !Number.isInteger(m) || m < 0 || m > 59 || lim < 1) {
       throw new ApiError(400, "Format jadwal tidak valid.");
     }
-    await setSchedulerSettings({ hour: h, minute: m, maxTextLimit: lim });
-    return { ok: true };
+    const settings = { hour: h, minute: m, maxTextLimit: lim };
+    await setSchedulerSettings(settings);
+    return { settings };
   });
 }

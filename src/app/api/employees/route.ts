@@ -2,8 +2,8 @@ import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
-import { calculateHakCuti, defaultPassword } from "@/lib/employee-logic";
-import { dateOnly } from "@/lib/serialize";
+import { calculateHakCuti, defaultPassword, serializeEmployee } from "@/lib/employee-logic";
+import { dateOnly, serializeUser } from "@/lib/serialize";
 
 // Tambah karyawan + buat akun login PEGAWAI (porting employee_controller.create).
 export async function POST(req: Request) {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     const hakCuti = calculateHakCuti(b.tanggalMulaiBekerja ?? null, b.jabatan ?? null);
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         passwordHash: hashPassword(defaultPassword(b.tanggalLahir ?? null)),
@@ -38,8 +38,9 @@ export async function POST(req: Request) {
           },
         },
       },
+      include: { employee: true },
     });
 
-    return { ok: true };
+    return { employee: serializeEmployee(user.employee!), user: serializeUser(user) };
   });
 }

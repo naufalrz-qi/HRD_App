@@ -1,9 +1,18 @@
 // Hashing password kompatibel Werkzeug — NODE-only, tanpa import Next.
 // Bisa dipakai di route handler maupun script (seed) lewat tsx.
-import { randomBytes, scryptSync, pbkdf2Sync, timingSafeEqual } from "node:crypto";
+import { randomBytes, scryptSync, scrypt as scryptAsync, pbkdf2Sync, timingSafeEqual, type ScryptOptions } from "node:crypto";
 
 // scrypt butuh memori ~128*N*r byte; longgarkan maxmem agar tidak error.
 const SCRYPT_MAXMEM = 192 * 1024 * 1024;
+
+function scryptAsyncP(password: string, salt: string, keylen: number, options: ScryptOptions): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scryptAsync(password, salt, keylen, options, (err, derivedKey) => {
+      if (err) reject(err);
+      else resolve(derivedKey);
+    });
+  });
+}
 
 /**
  * Verifikasi password terhadap hash format Werkzeug.
@@ -48,4 +57,17 @@ export function hashPassword(password: string): string {
   const salt = randomBytes(12).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 16);
   const hex = scryptSync(password, salt, 64, { N, r, p, maxmem: SCRYPT_MAXMEM }).toString("hex");
   return `scrypt:${N}:${r}:${p}$${salt}$${hex}`;
+}
+
+/**
+ * Versi async dari hashPassword — jalan di libuv threadpool, tidak memblokir event loop.
+ * Pakai ini untuk hashing banyak password sekaligus (mis. import Excel massal).
+ */
+export async function hashPasswordAsync(password: string): Promise<string> {
+  const N = 32768;
+  const r = 8;
+  const p = 1;
+  const salt = randomBytes(12).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 16);
+  const buf = await scryptAsyncP(password, salt, 64, { N, r, p, maxmem: SCRYPT_MAXMEM });
+  return `scrypt:${N}:${r}:${p}$${salt}$${buf.toString("hex")}`;
 }

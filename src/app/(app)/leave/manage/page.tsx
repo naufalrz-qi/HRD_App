@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Clock } from "lucide-react";
 import { useApp } from "@/lib/store";
 import { RoleGuard } from "@/components/RoleGuard";
@@ -27,22 +27,34 @@ function ManageLeaves() {
 
   const empById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
 
-  const matches = (emp: Employee | undefined) => {
-    if (!emp) return false;
-    if (jabatan && emp.jabatan !== jabatan) return false;
-    if (masaKerja) {
-      const years = getYearsWorked(emp);
-      if (years === null) return false;
-      if (masaKerja === "<1" && years >= 1) return false;
-      if (masaKerja === "1-3" && (years < 1 || years > 3)) return false;
-      if (masaKerja === ">3" && years <= 3) return false;
-    }
-    return true;
-  };
+  const matches = useCallback(
+    (emp: Employee | undefined) => {
+      if (!emp) return false;
+      if (jabatan && emp.jabatan !== jabatan) return false;
+      if (masaKerja) {
+        const years = getYearsWorked(emp);
+        if (years === null) return false;
+        if (masaKerja === "<1" && years >= 1) return false;
+        if (masaKerja === "1-3" && (years < 1 || years > 3)) return false;
+        if (masaKerja === ">3" && years <= 3) return false;
+      }
+      return true;
+    },
+    [jabatan, masaKerja]
+  );
 
-  const filtered = leaveRequests.filter((l) => matches(empById.get(l.employeeId)));
-  const pending = filtered.filter((l) => l.status === "PENDING").sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const history = filtered.filter((l) => l.status !== "PENDING").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const filtered = useMemo(
+    () => leaveRequests.filter((l) => matches(empById.get(l.employeeId))),
+    [leaveRequests, empById, matches]
+  );
+  const pending = useMemo(
+    () => filtered.filter((l) => l.status === "PENDING").sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    [filtered]
+  );
+  const history = useMemo(
+    () => filtered.filter((l) => l.status !== "PENDING").sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [filtered]
+  );
 
   const historyColumns: Column<LeaveRequest>[] = [
     {

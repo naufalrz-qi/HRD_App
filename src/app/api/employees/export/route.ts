@@ -14,7 +14,25 @@ export async function GET() {
     return new Response(JSON.stringify({ error: "Tidak berwenang." }), { status });
   }
 
-  const employees = await prisma.employee.findMany({ include: { user: true }, orderBy: { nama: "asc" } });
+  const employees = await prisma.employee.findMany({
+    select: {
+      id: true,
+      userId: true,
+      nama: true,
+      divisi: true,
+      jabatan: true,
+      jabatan2: true,
+      tanggalLahir: true,
+      tanggalMulaiBekerja: true,
+      statusKaryawan: true,
+      tanggalBerakhirKontrak: true,
+      hakCutiTahunan: true,
+      cutiTerpakai: true,
+      sisaCutiTambahan: true,
+      user: { select: { email: true, role: true, isActive: true } },
+    },
+    orderBy: { nama: "asc" },
+  });
 
   const rows: ExportRow[] = employees.map((row) => {
     const e = serializeEmployee(row);

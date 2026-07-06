@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
+import { serializeUser } from "@/lib/serialize";
 
 // Tambah user login (porting user_controller.create).
 export async function POST(req: Request) {
@@ -11,9 +12,9 @@ export async function POST(req: Request) {
     if (!email || !role || !password) throw new ApiError(400, "Email, role, dan password wajib diisi.");
     if (await prisma.user.findUnique({ where: { email } })) throw new ApiError(409, "Email sudah terdaftar.");
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: { email, role, passwordHash: hashPassword(password), isActive: true, mustChangePassword: true },
     });
-    return { ok: true };
+    return { user: serializeUser(user) };
   });
 }

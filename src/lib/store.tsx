@@ -100,6 +100,19 @@ async function api(url: string, method = "POST", body?: unknown): Promise<unknow
   return data;
 }
 
+/** Sisipkan/ganti item berdasarkan id, tanpa refetch seluruh dataset. */
+function upsert<T extends { id: number }>(arr: T[], item: T): T[] {
+  const idx = arr.findIndex((x) => x.id === item.id);
+  if (idx === -1) return [...arr, item];
+  const copy = arr.slice();
+  copy[idx] = item;
+  return copy;
+}
+
+function removeById<T extends { id: number }>(arr: T[], id: number): T[] {
+  return arr.filter((x) => x.id !== id);
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { notify } = useToast();
   const [data, setData] = useState<BootstrapData>(EMPTY);
@@ -133,11 +146,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ? data.employees.find((e) => e.userId === currentUser.id) ?? null
       : null;
 
-    // Bungkus aksi: jalankan API, toast hasil, lalu refresh data.
-    const run = async (fn: () => Promise<unknown>, successMsg?: string) => {
+    // Bungkus aksi: jalankan API (yang menempel hasilnya ke state lokal), lalu toast hasil.
+    // Tidak lagi refetch seluruh bootstrap tiap aksi — hasil mutasi ditempel langsung dari response API.
+    const run = async (fn: () => Promise<void>, successMsg?: string) => {
       try {
         await fn();
-        await refresh();
         if (successMsg) notify(successMsg, "success");
       } catch (e) {
         notify(e instanceof Error ? e.message : "Terjadi kesalahan.", "danger");
@@ -170,42 +183,111 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       requestLeave: async (input) => {
         try {
-          const res = (await api("/api/leave/request", "POST", input)) as { message?: string };
-          await refresh();
+          const res = (await api("/api/leave/request", "POST", input)) as {
+            message?: string;
+            leave: LeaveRequest;
+            employee: Employee | null;
+          };
+          setData((d) => ({
+            ...d,
+            leaveRequests: upsert(d.leaveRequests, res.leave),
+            employees: res.employee ? upsert(d.employees, res.employee) : d.employees,
+          }));
           return { ok: true, message: res.message ?? "Pengajuan cuti tersimpan." };
         } catch (e) {
           return { ok: false, message: e instanceof Error ? e.message : "Terjadi kesalahan." };
         }
       },
 
-      approveLeave: (id) => run(() => api(`/api/leave/${id}/approve`), "Cuti berhasil disetujui."),
-      rejectLeave: (id, alasanTolak) => run(() => api(`/api/leave/${id}/reject`, "POST", { alasanTolak }), "Cuti ditolak."),
+      approveLeave: (id) =>
+        run(async () => {
+          const res = (await api(`/api/leave/${id}/approve`)) as { leave: LeaveRequest; employee: Employee };
+          setData((d) => ({
+            ...d,
+            leaveRequests: upsert(d.leaveRequests, res.leave),
+            employees: upsert(d.employees, res.employee),
+          }));
+        }, "Cuti berhasil disetujui."),
+
+      rejectLeave: (id, alasanTolak) =>
+        run(async () => {
+          const res = (await api(`/api/leave/${id}/reject`, "POST", { alasanTolak })) as { leave: LeaveRequest };
+          setData((d) => ({ ...d, leaveRequests: upsert(d.leaveRequests, res.leave) }));
+        }, "Cuti ditolak."),
+
       adjustLeave: (employeeId, jumlahHari, alasan) =>
-        run(() => api("/api/leave/adjust", "POST", { employeeId, jumlahHari, alasan }), "Cuti kompensasi ditambahkan."),
+        run(async () => {
+          const res = (await api("/api/leave/adjust", "POST", { employeeId, jumlahHari, alasan })) as {
+            employee: Employee;
+            compensation: CompensationHistory;
+          };
+          setData((d) => ({
+            ...d,
+            employees: upsert(d.employees, res.employee),
+            compensationHistories: [res.compensation, ...d.compensationHistories],
+          }));
+        }, "Cuti kompensasi ditambahkan."),
 
       saveEmployee: (emp) =>
-        run(
-          () =>
-            emp.id
-              ? api(`/api/employees/${emp.id}`, "PUT", emp)
-              : api("/api/employees", "POST", emp),
-          emp.id ? "Data karyawan diperbarui." : "Karyawan baru ditambahkan."
-        ),
-      deleteEmployee: (id) => run(() => api(`/api/employees/${id}`, "DELETE"), "Karyawan dihapus."),
+        run(async () => {
+          const res = (await (emp.id
+            ? api(`/api/employees/${emp.id}`, "PUT", emp)
+            : api("/api/employees", "POST", emp))) as { employee: Employee; user?: User };
+          setData((d) => ({
+            ...d,
+            employees: upsert(d.employees, res.employee),
+            users: res.user ? upsert(d.users, res.user) : d.users,
+          }));
+        }, emp.id ? "Data karyawan diperbarui." : "Karyawan baru ditambahkan."),
+
+      deleteEmployee: (id) =>
+        run(async () => {
+          await api(`/api/employees/${id}`, "DELETE");
+          setData((d) => ({
+            ...d,
+            employees: removeById(d.employees, id),
+            leaveRequests: d.leaveRequests.filter((l) => l.employeeId !== id),
+            compensationHistories: d.compensationHistories.filter((c) => c.employeeId !== id),
+            reminderContacts: d.reminderContacts.map((r) => (r.employeeId === id ? { ...r, employeeId: null } : r)),
+          }));
+        }, "Karyawan dihapus."),
 
       saveUser: (u) =>
-        run(
-          () => (u.id ? api(`/api/users/${u.id}`, "PUT", u) : api("/api/users", "POST", u)),
-          u.id ? "User diperbarui." : "User baru ditambahkan."
-        ),
-      deleteUser: (id) => run(() => api(`/api/users/${id}`, "DELETE"), "User dihapus."),
+        run(async () => {
+          const res = (await (u.id ? api(`/api/users/${u.id}`, "PUT", u) : api("/api/users", "POST", u))) as {
+            user: User;
+          };
+          setData((d) => ({ ...d, users: upsert(d.users, res.user) }));
+        }, u.id ? "User diperbarui." : "User baru ditambahkan."),
 
-      saveHoliday: (h) => run(() => api("/api/holidays", "POST", h), "Tanggal merah ditambahkan."),
-      deleteHoliday: (id) => run(() => api(`/api/holidays/${id}`, "DELETE"), "Tanggal merah dihapus."),
+      deleteUser: (id) =>
+        run(async () => {
+          await api(`/api/users/${id}`, "DELETE");
+          setData((d) => ({ ...d, users: removeById(d.users, id) }));
+        }, "User dihapus."),
+
+      saveHoliday: (h) =>
+        run(async () => {
+          const res = (await api("/api/holidays", "POST", h)) as { holiday: PublicHoliday };
+          setData((d) => ({ ...d, holidays: upsert(d.holidays, res.holiday) }));
+        }, "Tanggal merah ditambahkan."),
+
+      deleteHoliday: (id) =>
+        run(async () => {
+          await api(`/api/holidays/${id}`, "DELETE");
+          setData((d) => ({ ...d, holidays: removeById(d.holidays, id) }));
+        }, "Tanggal merah dihapus."),
+
       generateHolidays: async (year) => {
         try {
-          const res = (await api("/api/holidays/generate", "POST", { year })) as { message?: string };
-          await refresh();
+          const res = (await api("/api/holidays/generate", "POST", { year })) as {
+            message?: string;
+            holidays: PublicHoliday[];
+          };
+          setData((d) => ({
+            ...d,
+            holidays: res.holidays.reduce((acc, h) => upsert(acc, h), d.holidays),
+          }));
           notify(res.message ?? "Selesai menarik hari libur.", "success");
         } catch (e) {
           notify(e instanceof Error ? e.message : "Gagal menarik data.", "danger");
@@ -213,12 +295,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       },
 
       saveReminder: (c) =>
-        run(
-          () => (c.id ? api(`/api/reminders/${c.id}`, "PUT", c) : api("/api/reminders", "POST", c)),
-          c.id ? "Kontak reminder diperbarui." : "Kontak reminder ditambahkan."
-        ),
-      deleteReminder: (id) => run(() => api(`/api/reminders/${id}`, "DELETE"), "Kontak reminder dihapus."),
-      updateScheduler: (s) => run(() => api("/api/reminders/settings", "POST", s), "Pengaturan jadwal disimpan."),
+        run(async () => {
+          const res = (await (c.id ? api(`/api/reminders/${c.id}`, "PUT", c) : api("/api/reminders", "POST", c))) as {
+            reminder: ReminderContact;
+          };
+          setData((d) => ({ ...d, reminderContacts: upsert(d.reminderContacts, res.reminder) }));
+        }, c.id ? "Kontak reminder diperbarui." : "Kontak reminder ditambahkan."),
+
+      deleteReminder: (id) =>
+        run(async () => {
+          await api(`/api/reminders/${id}`, "DELETE");
+          setData((d) => ({ ...d, reminderContacts: removeById(d.reminderContacts, id) }));
+        }, "Kontak reminder dihapus."),
+
+      updateScheduler: (s) =>
+        run(async () => {
+          const res = (await api("/api/reminders/settings", "POST", s)) as { settings: SchedulerSettings };
+          setData((d) => ({ ...d, schedulerSettings: res.settings }));
+        }, "Pengaturan jadwal disimpan."),
+
       triggerReminder: async () => {
         try {
           await api("/api/reminders/trigger");

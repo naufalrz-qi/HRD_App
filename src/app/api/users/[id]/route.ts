@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
+import { serializeUser } from "@/lib/serialize";
 
 // Edit user (porting user_controller.edit).
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -10,7 +11,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
     const id = Number((await ctx.params).id);
     const { email, role, isActive, password } = await req.json();
 
-    await prisma.user.update({
+    const updated = await prisma.user.update({
       where: { id },
       data: {
         email,
@@ -19,7 +20,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
         ...(password ? { passwordHash: hashPassword(password), mustChangePassword: true } : {}),
       },
     });
-    return { ok: true };
+    return { user: serializeUser(updated) };
   });
 }
 
@@ -35,6 +36,6 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     if (user.employee) throw new ApiError(400, "User terhubung dengan data karyawan. Hapus/lepas karyawan dulu.");
 
     await prisma.user.delete({ where: { id } });
-    return { ok: true };
+    return { userId: id };
   });
 }
