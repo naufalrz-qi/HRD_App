@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
+import { serializeReminder } from "@/lib/serialize";
 
 // Edit kontak reminder.
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -9,7 +10,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
     const id = Number((await ctx.params).id);
     const { nama, nomorTelepon, kategori, isActive, employeeId } = await req.json();
 
-    await prisma.reminderContact.update({
+    const updated = await prisma.reminderContact.update({
       where: { id },
       data: {
         nama: nama || null,
@@ -19,7 +20,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
         employeeId: employeeId ? Number(employeeId) : null,
       },
     });
-    return { ok: true };
+    return { reminder: serializeReminder(updated) };
   });
 }
 
@@ -28,6 +29,6 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     await requireRole("SUPERADMIN");
     const id = Number((await ctx.params).id);
     await prisma.reminderContact.delete({ where: { id } });
-    return { ok: true };
+    return { reminderId: id };
   });
 }

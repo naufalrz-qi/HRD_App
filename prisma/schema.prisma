@@ -65,6 +65,10 @@ model LeaveRequest {
   employee  Employee @relation(fields: [employeeId], references: [id])
   requester User     @relation("Requester", fields: [requesterUserId], references: [id])
 
+  @@index([employeeId])
+  @@index([requesterUserId])
+  @@index([status])
+  @@index([createdAt])
   @@map("leave_requests")
 }
 
@@ -77,6 +81,8 @@ model CompensationHistory {
 
   employee Employee @relation(fields: [employeeId], references: [id])
 
+  @@index([employeeId])
+  @@index([createdAt])
   @@map("compensation_histories")
 }
 
@@ -98,6 +104,8 @@ model ReminderContact {
 
   employee Employee? @relation(fields: [employeeId], references: [id])
 
+  @@index([employeeId])
+  @@index([isActive, kategori])
   @@map("reminder_contacts")
 }
 

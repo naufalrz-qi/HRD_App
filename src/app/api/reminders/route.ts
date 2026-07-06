@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
+import { serializeReminder } from "@/lib/serialize";
 
 // Tambah kontak reminder (porting reminder_controller.add_reminder).
 export async function POST(req: Request) {
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
     const { nama, nomorTelepon, kategori, employeeId, isActive } = await req.json();
     if (!nomorTelepon) throw new ApiError(400, "Nomor WhatsApp wajib diisi.");
 
-    await prisma.reminderContact.create({
+    const created = await prisma.reminderContact.create({
       data: {
         nama: employeeId ? null : nama || null,
         nomorTelepon,
@@ -18,6 +19,6 @@ export async function POST(req: Request) {
         employeeId: employeeId ? Number(employeeId) : null,
       },
     });
-    return { ok: true };
+    return { reminder: serializeReminder(created) };
   });
 }

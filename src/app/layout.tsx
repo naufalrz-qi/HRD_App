@@ -4,10 +4,11 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { themeInitScript } from "@/components/ThemeToggle";
 
+// Hanya weight yang benar-benar dipakai (font-medium/semibold/bold/extrabold + teks reguler 400).
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {

@@ -69,10 +69,10 @@ export default function LoginPage() {
           <p className="mb-6 text-sm text-text-muted">Masukkan kredensial Anda untuk melanjutkan.</p>
           <form onSubmit={onSubmit} className="space-y-4">
             <FormField label="Email">
-              <Input name="email" type="email" placeholder="nama@perusahaan.com" defaultValue="superadmin@hrapp.com" required />
+              <Input name="email" type="email" placeholder="nama@perusahaan.com" required />
             </FormField>
             <FormField label="Password">
-              <Input name="password" type="password" placeholder="••••••••" defaultValue="superadmin123" required />
+              <Input name="password" type="password" placeholder="••••••••" required />
             </FormField>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Memuat..." : "Masuk"}

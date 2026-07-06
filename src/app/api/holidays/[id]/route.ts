@@ -7,6 +7,6 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     await requireRole("ADMIN", "SUPERADMIN");
     const id = Number((await ctx.params).id);
     await prisma.publicHoliday.delete({ where: { id } });
-    return { ok: true };
+    return { holidayId: id };
   });
 }

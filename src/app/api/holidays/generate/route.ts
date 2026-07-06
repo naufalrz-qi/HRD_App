@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
-import { dateOnly } from "@/lib/serialize";
+import { dateOnly, serializeHoliday } from "@/lib/serialize";
 
 interface NagerHoliday {
   date: string;
@@ -21,20 +21,31 @@ export async function POST(req: Request) {
     if (!res.ok) throw new ApiError(502, "Gagal menarik data dari API Nager.Date.");
     const data = (await res.json()) as NagerHoliday[];
 
-    let count = 0;
-    for (const item of data) {
-      const d = dateOnly(item.date)!;
-      if (await prisma.publicHoliday.findUnique({ where: { tanggal: d } })) continue;
-      await prisma.publicHoliday.create({ data: { tanggal: d, keterangan: item.localName } });
-      count += 1;
+    const items = data.map((item) => ({ tanggal: dateOnly(item.date)!, keterangan: item.localName }));
+    const existing = await prisma.publicHoliday.findMany({
+      where: { tanggal: { in: items.map((i) => i.tanggal) } },
+      select: { tanggal: true },
+    });
+    const existingSet = new Set(existing.map((h) => h.tanggal.toISOString().slice(0, 10)));
+    const newItems = items.filter((i) => !existingSet.has(i.tanggal.toISOString().slice(0, 10)));
+
+    if (newItems.length > 0) {
+      await prisma.publicHoliday.createMany({ data: newItems, skipDuplicates: true });
     }
 
+    const created = newItems.length
+      ? await prisma.publicHoliday.findMany({
+          where: { tanggal: { in: newItems.map((i) => i.tanggal) } },
+          orderBy: { tanggal: "asc" },
+        })
+      : [];
+
     return {
-      ok: true,
-      count,
+      count: created.length,
+      holidays: created.map(serializeHoliday),
       message:
-        count > 0
-          ? `Berhasil menambahkan ${count} hari libur nasional tahun ${y}.`
+        created.length > 0
+          ? `Berhasil menambahkan ${created.length} hari libur nasional tahun ${y}.`
           : `Tidak ada tanggal baru (semua libur ${y} sudah ada).`,
     };
   });

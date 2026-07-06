@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { ApiError, handle } from "@/lib/api";
 import { requireRole } from "@/lib/auth";
-import { dateOnly } from "@/lib/serialize";
+import { dateOnly, serializeHoliday } from "@/lib/serialize";
 
 // Tambah tanggal merah manual (porting holiday_controller.create).
 export async function POST(req: Request) {
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     if (await prisma.publicHoliday.findUnique({ where: { tanggal: d } })) {
       throw new ApiError(409, `Tanggal merah untuk ${tanggal} sudah ada.`);
     }
-    await prisma.publicHoliday.create({ data: { tanggal: d, keterangan } });
-    return { ok: true };
+    const created = await prisma.publicHoliday.create({ data: { tanggal: d, keterangan } });
+    return { holiday: serializeHoliday(created) };
   });
 }

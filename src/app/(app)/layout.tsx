@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
@@ -10,13 +10,7 @@ import { useApp } from "@/lib/store";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { loading, currentUser, refresh } = useApp();
-
-  // Muat data saat masuk area app (mis. setelah login dari halaman publik).
-  useEffect(() => {
-    if (!currentUser) void refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { loading, currentUser } = useApp();
 
   if (loading && !currentUser) {
     return (
